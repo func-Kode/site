@@ -7,7 +7,7 @@
 // import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
 // import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
 // import { hasEnvVars } from "@/lib/utils";
-// import Link from "next/link";
+import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -41,7 +41,7 @@ export default function HomePage() {
         {/* CTAs */}
         <div className="flex gap-3 justify-center mt-2">
           <a href="/projects" className="px-5 py-2 rounded-full bg-brand-green text-white font-semibold shadow-md hover:scale-105 active:scale-95 transition-transform duration-200">View Projects</a>
-          <a href="/blog" className="px-5 py-2 rounded-full bg-brand-blue text-white font-semibold shadow-md hover:scale-105 active:scale-95 transition-transform duration-200">Read Blog</a>
+          <Link href="/blog" className="px-5 py-2 rounded-full bg-brand-blue text-white font-semibold shadow-md hover:scale-105 active:scale-95 transition-transform duration-200">Read Blog</Link>
         </div>
       </section>
       {/* Micro-interaction: Animated code cursor */}
