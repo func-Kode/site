@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClientComponentClient, Session } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import OnboardProfileForm from "@/components/onboard-profile-form";
+import Image from 'next/image';
 
 export default function OnboardPage() {
   const supabase = createClientComponentClient();
@@ -29,13 +30,14 @@ export default function OnboardPage() {
       }
       setSession({ user } as Session); // Only set user, not full session
       // Fetch user profile from users table
-      let { data: userProfile, error: profileError } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+      const { data: userProfile, error: profileError } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+      let finalProfile = userProfile;
       if (profileError) {
         // Improved error logging for debugging
         console.error('Profile fetch error:', profileError, profileError?.message, JSON.stringify(profileError));
       }
       // If no profile, create one
-      if (!userProfile) {
+      if (!finalProfile) {
         // Try to get GitHub username from user metadata
         const github_username = user.user_metadata?.user_name || user.user_metadata?.preferred_username || '';
         const avatar_url = user.user_metadata?.avatar_url || '';
@@ -59,10 +61,10 @@ export default function OnboardPage() {
           if (refetchError) {
             console.error('Profile refetch error:', refetchError, refetchError?.message, JSON.stringify(refetchError));
           }
-          userProfile = createdProfile;
+          finalProfile = createdProfile;
         }
       }
-      setProfile(userProfile);
+      setProfile(finalProfile);
       setLoading(false);
     };
     getSessionAndProfile();
@@ -123,9 +125,11 @@ export default function OnboardPage() {
         <h1 className="text-4xl font-extrabold mb-2 text-zinc-900 dark:text-white tracking-tight">Set up your profile</h1>
         <p className="mb-6 text-zinc-600 dark:text-zinc-400 text-lg">Complete your profile to get the best experience and connect with the community.</p>
         <div className="mb-8 flex items-center gap-4">
-          <img
+          <Image
             src={profile?.avatar_url as string || '/raccoon.png'}
             alt="Avatar"
+            width={80}
+            height={80}
             className="w-20 h-20 rounded-full border-4 border-primary-500 shadow-md bg-zinc-100 dark:bg-zinc-800 object-cover"
           />
           <div>
