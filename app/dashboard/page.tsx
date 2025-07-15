@@ -5,20 +5,58 @@ import Image from "next/image";
 import type { User } from "@supabase/supabase-js";
 import { getActivityLogs } from "@/lib/supabase/getActivityLogs";
 
+interface Activity {
+	id: string;
+	repo: string;
+	event_type: string;
+	username: string;
+	action: string;
+	created_at: string;
+}
+
+interface Repo {
+	id: string;
+	name: string;
+	full_name: string;
+	html_url: string;
+	private: boolean;
+	stargazers_count: number;
+	forks_count: number;
+	open_issues_count: number;
+	owner?: {
+		login?: string;
+	};
+}
+
+interface Issue {
+	id: string;
+	title: string;
+	html_url: string;
+	state: string;
+	assignee?: {
+		login?: string;
+	};
+	repository_url?: string;
+}
+
+interface Discussion {
+	id: string;
+	title: string;
+	html_url: string;
+	repository_url?: string;
+}
+
 export default function DashboardPage() {
 	const [user, setUser] = useState<User | null>(null);
-	const [repos, setRepos] = useState<any[]>([]);
-	const [issues, setIssues] = useState<any[]>([]);
-	const [discussions, setDiscussions] = useState<any[]>([]);
-	const [suggested, setSuggested] = useState<any[]>([]);
-	const [contribData, setContribData] = useState<any[]>([]);
-	const [starredRepos, setStarredRepos] = useState<any[]>([]);
-	const [activities, setActivities] = useState<any[]>([]);
-	const [loading, setLoading] = useState(true);
+	const [repos, setRepos] = useState<Repo[]>([]);
+	const [issues, setIssues] = useState<Issue[]>([]);
+	const [discussions, setDiscussions] = useState<Discussion[]>([]);
+	const [contribData, setContribData] = useState<{ date: string; count: number }[]>([]);
+	const [starredRepos, setStarredRepos] = useState<Repo[]>([]);
+	const [activities, setActivities] = useState<Activity[]>([]);
 	const [loadingRepos, setLoadingRepos] = useState(false);
 	const [loadingIssues, setLoadingIssues] = useState(false);
 	const [loadingDiscussions, setLoadingDiscussions] = useState(false);
-	const [loadingSuggested, setLoadingSuggested] = useState(false);
 	const [loadingContrib, setLoadingContrib] = useState(false);
 	const [loadingStarred, setLoadingStarred] = useState(false);
 	const [loadingActivities, setLoadingActivities] = useState(true);
@@ -44,7 +82,7 @@ export default function DashboardPage() {
 					const orgReposRes = await fetch(
 						"https://api.github.com/orgs/funcKode/repos",
 						{
-							headers: { Authorization: `token " + token + "` },
+							headers: { Authorization: `token ${token}` },
 						}
 					);
 					const orgRepos = orgReposRes.ok ? await orgReposRes.json() : [];
@@ -53,7 +91,7 @@ export default function DashboardPage() {
 
 					// 2. Active issues assigned (in funcKode org only)
 					setLoadingIssues(true);
-					const assignedIssues: any[] = [];
+					const assignedIssues: Issue[] = [];
 					for (const repo of orgRepos) {
 						// Fetch all open issues for the repo
 						const issuesRes = await fetch(
@@ -69,7 +107,7 @@ export default function DashboardPage() {
 							// Show issues assigned to or created by the user
 							assignedIssues.push(
 								...issuesData.filter(
-									(issue: any) =>
+									(issue: Issue & { user?: { login?: string } }) =>
 										issue.assignee?.login === ghUsername ||
 										issue.user?.login === ghUsername
 								)
@@ -81,7 +119,7 @@ export default function DashboardPage() {
 
 					// 3. Discussions participated (in funcKode org only)
 					setLoadingDiscussions(true);
-					let allDiscussions: any[] = [];
+					let allDiscussions: Discussion[] = [];
 					for (const repo of orgRepos) {
 						const discRes = await fetch(
 							`https://api.github.com/repos/funcKode/${repo.name}/discussions`,
@@ -93,10 +131,10 @@ export default function DashboardPage() {
 							const discData = await discRes.json();
 							allDiscussions = allDiscussions.concat(
 								discData.filter(
-									(d: any) =>
+									(d: Discussion & { user?: { login?: string }; comments?: { user?: { login?: string } }[] }) =>
 										d.user?.login === ghUsername ||
 										d.comments?.some(
-											(c: any) => c.user?.login === ghUsername
+											(c: { user?: { login?: string } }) => c.user?.login === ghUsername
 										)
 								)
 							);
@@ -105,50 +143,9 @@ export default function DashboardPage() {
 					setDiscussions(allDiscussions);
 					setLoadingDiscussions(false);
 
-					// 4. Suggested issues/discussions (open, by interest, in funcKode org only)
-					setLoadingSuggested(true);
-					const { data: profile } = await supabase
-						.from("users")
-						.select("interests")
-						.eq("id", data.user.id)
-						.single();
-					let suggestedIssues: any[] = [];
-					for (const repo of orgRepos) {
-						const issRes = await fetch(
-							`https://api.github.com/repos/funcKode/${repo.name}/issues?state=open`,
-							{
-								headers: { Authorization: `token ${token}` },
-							}
-						);
-						if (issRes.ok) {
-							const issData = await issRes.json();
-							if (profile?.interests) {
-								const tags = profile.interests
-									.split(",")
-									.map((t: string) => t.trim().toLowerCase());
-								suggestedIssues = suggestedIssues.concat(
-									issData.filter((i: any) =>
-										tags.some(
-											(tag: string) =>
-												i.title.toLowerCase().includes(tag) ||
-												(i.labels &&
-													i.labels.some(
-														(l: any) => l.name.toLowerCase().includes(tag)
-													))
-										)
-									)
-								);
-							} else {
-								suggestedIssues = suggestedIssues.concat(issData);
-							}
-						}
-					}
-					setSuggested(suggestedIssues);
-					setLoadingSuggested(false);
-
-					// 5. Fun graph of contributions over time (in funcKode org only)
+					// 4. Fun graph of contributions over time (in funcKode org only)
 					setLoadingContrib(true);
-					let allEvents: any[] = [];
+					let allEvents: { actor?: { login?: string }; created_at: string }[] = [];
 					for (const repo of orgRepos) {
 						const eventsRes = await fetch(
 							`https://api.github.com/repos/funcKode/${repo.name}/events`,
@@ -162,7 +159,7 @@ export default function DashboardPage() {
 					}
 					// Aggregate by day
 					const byDay: Record<string, number> = {};
-					allEvents.forEach((e: any) => {
+					allEvents.forEach((e: { actor?: { login?: string }; created_at: string }) => {
 						if (e.actor?.login === ghUsername) {
 							const day = e.created_at.slice(0, 10);
 							byDay[day] = (byDay[day] || 0) + 1;
@@ -182,14 +179,13 @@ export default function DashboardPage() {
 						const allStarred = await starredRes.json();
 						setStarredRepos(
 							allStarred.filter(
-								(repo: any) => repo.owner?.login?.toLowerCase() === "funckode"
+								(repo: Repo & { owner?: { login?: string } }) => repo.owner?.login?.toLowerCase() === "funckode"
 							)
 						);
 					}
 					setLoadingStarred(false);
 				}
 			}
-			setLoading(false);
 		});
 		// Store GitHub access token in users table after login
 		(async () => {
@@ -210,17 +206,17 @@ export default function DashboardPage() {
 			setActivities(data || []);
 			setLoadingActivities(false);
 		})();
-	}, []);
+	}, [user?.id]);
 
 	// Filtered and grouped activities
 	const filteredActivities = useMemo(() => {
 		if (eventTypeFilter === "all") return activities;
-		return activities.filter((a: any) => a.event_type === eventTypeFilter);
+		return activities.filter((a: Activity) => a.event_type === eventTypeFilter);
 	}, [activities, eventTypeFilter]);
 
 	const groupedByRepo = useMemo(() => {
-		const groups: Record<string, any[]> = {};
-		filteredActivities.forEach((a: any) => {
+		const groups: Record<string, Activity[]> = {};
+		filteredActivities.forEach((a: Activity) => {
 			if (!groups[a.repo]) groups[a.repo] = [];
 			groups[a.repo].push(a);
 		});
@@ -230,7 +226,7 @@ export default function DashboardPage() {
 	// Contribution graph data (by day)
 	const contribGraphData = useMemo(() => {
 		const byDay: Record<string, number> = {};
-		activities.forEach((a: any) => {
+		activities.forEach((a: Activity) => {
 			const day = a.created_at.slice(0, 10);
 			byDay[day] = (byDay[day] || 0) + 1;
 		});
@@ -239,7 +235,7 @@ export default function DashboardPage() {
 
 	// Activity streak calculation
 	const streak = useMemo(() => {
-		const days = new Set(activities.map((a: any) => a.created_at.slice(0, 10)));
+		const days = new Set(activities.map((a: Activity) => a.created_at.slice(0, 10)));
 		const today = new Date();
 		let currentStreak = 0;
 		for (let i = 0; i < 365; i++) {
@@ -286,7 +282,7 @@ export default function DashboardPage() {
 					) : issues.length === 0 ? (
 						<div className="text-gray-500">No open issues found in funcKode repos.</div>
 					) : (
-						issues.map((issue: any) => (
+						issues.map((issue: Issue) => (
 							<div key={issue.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b last:border-b-0 border-gray-200 dark:border-gray-700 py-2">
 								<div>
 									<a href={issue.html_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-blue hover:underline">
@@ -309,7 +305,7 @@ export default function DashboardPage() {
 				<h2 className="text-2xl font-bold mb-4">Discussions in funcKode Organization</h2>
 				<div className="bg-white rounded-lg shadow p-4 flex flex-col gap-3">
 					{loadingDiscussions ? <div>Loading...</div> : discussions.length === 0 ? <div>No discussions found.</div> : (
-						discussions.map((disc: any) => (
+						discussions.map((disc: Discussion) => (
 							<div key={disc.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b last:border-b-0 border-gray-200 py-2">
 								<div>
 									<a href={disc.html_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-blue hover:underline">
@@ -328,7 +324,7 @@ export default function DashboardPage() {
 				<h2 className="text-2xl font-bold text-brand-blue dark:text-brand-blue mb-4">funcKode Organization Repositories</h2>
 				<div className="bg-white dark:bg-card rounded-lg shadow p-4 flex flex-col gap-3">
 					{loadingRepos ? <div className="text-gray-500">Loading repositories...</div> : repos.length === 0 ? <div className="text-gray-500">No repositories found.</div> : (
-						repos.map((repo: any) => (
+						repos.map((repo: Repo) => (
 							<div key={repo.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b last:border-b-0 border-gray-200 dark:border-gray-700 py-2">
 								<div>
 									<a href={repo.html_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-blue hover:underline">
@@ -360,7 +356,7 @@ export default function DashboardPage() {
 				<h2 className="text-2xl font-bold mb-4">Starred funcKode Repositories</h2>
 				<div className="bg-white rounded-lg shadow p-4 flex flex-col gap-3">
 					{loadingStarred ? <div>Loading...</div> : starredRepos.length === 0 ? <div>No funcKode repos starred.</div> : (
-						starredRepos.map((repo: any) => (
+						starredRepos.map((repo: Repo) => (
 							<div key={repo.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b last:border-b-0 border-gray-200 py-2">
 								<div>
 									<a href={repo.html_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-blue hover:underline">
@@ -390,7 +386,7 @@ export default function DashboardPage() {
 							onChange={e => setEventTypeFilter(e.target.value)}
 						>
 							<option value="all">All</option>
-							{[...new Set(activities.map((a: any) => a.event_type))].map(type => (
+							{[...new Set(activities.map((a: Activity) => a.event_type))].map(type => (
 								<option key={type} value={type}>{type}</option>
 							))}
 						</select>
@@ -413,7 +409,7 @@ export default function DashboardPage() {
 						<details key={repo} open className="mb-2">
 							<summary className="font-semibold text-brand-blue cursor-pointer select-none bg-gray-100 px-2 py-1 rounded mb-1">{repo} <span className="text-xs text-gray-400">({acts.length})</span></summary>
 							<div className="flex flex-col gap-2">
-								{acts.map((activity: any) => (
+								{acts.map((activity: Activity) => (
 									<div key={activity.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b last:border-b-0 border-gray-200 py-2">
 										<div>
 											<span className="font-semibold text-brand-blue">{activity.event_type}</span>
@@ -436,25 +432,26 @@ export default function DashboardPage() {
 
 // ContributionGraph component (add at bottom of file)
 function ContributionGraph({ data }: { data: { date: string, count: number }[] }) {
-	// ...existing code...
-	// Use Chart.js or a simple SVG for a heatmap/line chart
-	// For brevity, render a simple bar chart with SVG
-	if (!data.length) return <div className="text-gray-400">No data</div>;
-	const max = Math.max(...data.map(d => d.count));
-	return (
-		<svg width={data.length * 8} height={40} className="block">
-			{data.map((d, i) => (
-				<rect
-					key={d.date}
-					x={i * 8}
-					y={40 - (d.count / max) * 36}
-					width={6}
-					height={(d.count / max) * 36}
-					fill="#2563eb"
-				>
-					<title>{d.date}: {d.count} activities</title>
-				</rect>
-			))}
-		</svg>
-	);
+  // ...existing code...
+  // Use Chart.js or a simple SVG for a heatmap/line chart
+  // For brevity, render a simple bar chart with SVG
+  if (!data.length) return <div className="text-gray-400">No data</div>;
+  const max = Math.max(...data.map(d => d.count));
+  return (
+    <svg width={data.length * 8} height={40} className="block">
+      {data.map((d, i) => (
+        <rect
+          key={d.date}
+          x={i * 8}
+          y={40 - (d.count / max) * 36}
+          width={6}
+          height={(d.count / max) * 36}
+          fill="#2563eb"
+        >
+          <title>{d.date}: {d.count} activities</title>
+        </rect>
+      ))}
+    </svg>
+  );
 }
+

@@ -10,7 +10,12 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "/";
 
   if (token_hash && type) {
-    const supabase = await createClient();
+    // Wrap request.cookies to match expected cookieStore interface
+    const cookieStore = {
+      getAll: () => request.cookies.getAll(),
+      set: (name: string, value: string) => request.cookies.set(name, value),
+    };
+    const supabase = createClient(cookieStore);
 
     const { error } = await supabase.auth.verifyOtp({
       type,

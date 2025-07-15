@@ -10,7 +10,7 @@ export default function OnboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     // Listen for auth state changes to restore session
@@ -47,6 +47,32 @@ export default function OnboardPage() {
     }
   }, [loading, session, router]);
 
+  // Define the expected profile type
+  interface ProfileShape {
+    id: string;
+    github_username: string;
+    display_name: string;
+    bio: string;
+    skills: string;
+    role_preference: string;
+    interests: string;
+    avatar_url?: string;
+  }
+
+  function isProfileShape(obj: unknown): obj is ProfileShape {
+    if (!obj || typeof obj !== 'object') return false;
+    const o = obj as Record<string, unknown>;
+    return (
+      typeof o.id === 'string' &&
+      typeof o.github_username === 'string' &&
+      typeof o.display_name === 'string' &&
+      typeof o.bio === 'string' &&
+      typeof o.skills === 'string' &&
+      typeof o.role_preference === 'string' &&
+      typeof o.interests === 'string'
+    );
+  }
+
   if (loading) return <p className="text-center mt-10">Loading...</p>;
   if (!session) {
     return (
@@ -56,6 +82,10 @@ export default function OnboardPage() {
     );
   }
   if (!profile && !loading) return <p className="text-center mt-10 text-red-500">Profile not found or error loading profile. Check your Supabase users table and triggers.</p>;
+
+  if (!isProfileShape(profile)) {
+    return <p className="text-center mt-10 text-red-500">Profile data is invalid or incomplete. Please contact support.</p>;
+  }
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-4">
