@@ -22,18 +22,11 @@ const inter = Inter({
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
       <html lang="en" suppressHydrationWarning>
         <body className={`${inter.className} antialiased`}>
           <Navbar />
           {children}
         </body>
       </html>
-    </ThemeProvider>
   );
 }

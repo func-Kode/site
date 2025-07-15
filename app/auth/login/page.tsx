@@ -12,6 +12,7 @@ export default function Page() {
         <div className="w-full">
           <LoginForm />
         </div>
+        <p className="text-sm text-gray-500 text-center mt-4">Sign in is only available via GitHub.</p>
       </div>
     </div>
   );

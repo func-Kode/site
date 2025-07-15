@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { User } from "@supabase/supabase-js";
 import type React from "react";
 
@@ -11,7 +11,7 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    const supabase = createClient();
+    const supabase = createClientComponentClient();
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
       setName(data.user?.user_metadata?.name || "");
@@ -23,7 +23,7 @@ export default function ProfilePage() {
     if (!user) return;
     setSaving(true);
     setSuccess(false);
-    const supabase = createClient();
+    const supabase = createClientComponentClient();
     const { error } = await supabase.auth.updateUser({ data: { name } });
     setSaving(false);
     setSuccess(!error);
@@ -63,4 +63,4 @@ export default function ProfilePage() {
       </form>
     </main>
   );
-} 
+}

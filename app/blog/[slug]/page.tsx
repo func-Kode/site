@@ -3,7 +3,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Button } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
 import type React from "react";
@@ -32,7 +32,7 @@ export default function BlogDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = createClient();
+    const supabase = createClientComponentClient();
     const fetchData = async () => {
       // Fetch blog
       const { data: blogData } = await supabase.from("blogs").select("*").eq("slug", slug).single();
@@ -70,7 +70,7 @@ export default function BlogDetailPage() {
 
   const handleLike = async () => {
     if (!user || !blog) return;
-    const supabase = createClient();
+    const supabase = createClientComponentClient();
     if (liked) {
       await supabase.from("blog_likes").delete().eq("blog_id", blog.id).eq("user_id", user.id);
       setLikes((l) => l - 1);
@@ -85,7 +85,7 @@ export default function BlogDetailPage() {
   const handleComment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user || !blog || !comment.trim()) return;
-    const supabase = createClient();
+    const supabase = createClientComponentClient();
     await supabase.from("blog_comments").insert({
       blog_id: blog.id,
       user_id: user.id,
@@ -157,4 +157,4 @@ export default function BlogDetailPage() {
       </div>
     </main>
   );
-} 
+}
