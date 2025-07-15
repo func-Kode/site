@@ -3,14 +3,14 @@ import Link from "next/link";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/logout-button";
-import { createClient } from "@/lib/supabase/client";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 
 export function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   useEffect(() => {
-    const supabase = createClient();
+    const supabase = createClientComponentClient();
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
@@ -45,4 +45,4 @@ export function Navbar() {
       </div>
     </nav>
   );
-} 
+}
