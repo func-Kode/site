@@ -48,3 +48,8 @@ To create a hub where developers can sign in, contribute meaningfully, and grow 
 git clone https://github.com/func-kode/site.git
 cd site
 npm install
+
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+npm run dev
