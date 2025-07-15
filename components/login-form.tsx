@@ -12,7 +12,7 @@ export function LoginForm() {
       provider: "github",
       options: {
         scopes: "read:user user:email repo read:discussion",
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
+        redirectTo: "https://main.d1y6vxwm1j5wrs.amplifyapp.com/dashboard",
       },
     });
 
