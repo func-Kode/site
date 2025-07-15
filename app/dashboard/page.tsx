@@ -78,24 +78,37 @@ export default function DashboardPage() {
 				if (token && ghUsername) {
 					// 1. Contributions to func(Kode) repos (PRs/commits)
 					setLoadingRepos(true);
-					// Only fetch repos from funcKode org
+					// Only fetch repos from func-Kode org
 					const orgReposRes = await fetch(
-						"https://api.github.com/orgs/funcKode/repos",
+						"https://api.github.com/orgs/func-Kode/repos",
 						{
 							headers: { Authorization: `token ${token}` },
 						}
 					);
-					const orgRepos = orgReposRes.ok ? await orgReposRes.json() : [];
+					if (orgReposRes.status === 404) {
+						console.error('GitHub organization "func-Kode" not found or you do not have access.');
+						setRepos([]);
+						setLoadingRepos(false);
+						return;
+					}
+					if (!orgReposRes.ok) {
+						const errMsg = await orgReposRes.text();
+						console.error(`GitHub API error: ${orgReposRes.status} ${orgReposRes.statusText}`, errMsg);
+						setRepos([]);
+						setLoadingRepos(false);
+						return;
+					}
+					const orgRepos = await orgReposRes.json();
 					setRepos(orgRepos);
 					setLoadingRepos(false);
 
-					// 2. Active issues assigned (in funcKode org only)
+					// 2. Active issues assigned (in func-Kode org only)
 					setLoadingIssues(true);
 					const assignedIssues: Issue[] = [];
 					for (const repo of orgRepos) {
 						// Fetch all open issues for the repo
 						const issuesRes = await fetch(
-							`https://api.github.com/repos/funcKode/${repo.name}/issues?state=open`,
+							`https://api.github.com/repos/func-Kode/${repo.name}/issues?state=open`,
 							{
 								headers: { Authorization: `token ${token}` },
 							}
@@ -117,12 +130,12 @@ export default function DashboardPage() {
 					setIssues(assignedIssues);
 					setLoadingIssues(false);
 
-					// 3. Discussions participated (in funcKode org only)
+					// 3. Discussions participated (in func-Kode org only)
 					setLoadingDiscussions(true);
 					let allDiscussions: Discussion[] = [];
 					for (const repo of orgRepos) {
 						const discRes = await fetch(
-							`https://api.github.com/repos/funcKode/${repo.name}/discussions`,
+							`https://api.github.com/repos/func-Kode/${repo.name}/discussions`,
 							{
 								headers: { Authorization: `token ${token}` },
 							}
@@ -143,12 +156,12 @@ export default function DashboardPage() {
 					setDiscussions(allDiscussions);
 					setLoadingDiscussions(false);
 
-					// 4. Fun graph of contributions over time (in funcKode org only)
+					// 4. Fun graph of contributions over time (in func-Kode org only)
 					setLoadingContrib(true);
 					let allEvents: { actor?: { login?: string }; created_at: string }[] = [];
 					for (const repo of orgRepos) {
 						const eventsRes = await fetch(
-							`https://api.github.com/repos/funcKode/${repo.name}/events`,
+							`https://api.github.com/repos/func-Kode/${repo.name}/events`,
 							{
 								headers: { Authorization: `token ${token}` },
 							}

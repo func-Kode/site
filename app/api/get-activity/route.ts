@@ -10,7 +10,14 @@ export async function GET(req: NextRequest) {
 
   const { data, count, error } = await getActivityLogs({ limit, repo, username, event_type });
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // Log the error object for debugging
+    console.error("Error fetching activity logs:", error, JSON.stringify(error));
+    // Return a more descriptive error message
+    let message = "Unknown error";
+    if (typeof error === "string") message = error;
+    else if (error && typeof error.message === "string") message = error.message;
+    else message = JSON.stringify(error);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
   return NextResponse.json({ data, count });
 }

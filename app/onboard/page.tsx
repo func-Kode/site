@@ -19,18 +19,48 @@ export default function OnboardPage() {
     });
 
     const getSessionAndProfile = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      console.log('Supabase session:', data.session, 'Error:', error);
-      if (error || !data.session) {
+      // Use getUser for secure, authenticated user info
+      const { data: { user }, error } = await supabase.auth.getUser();
+      console.log('Supabase user:', user, 'Error:', error);
+      if (error || !user) {
         setLoading(false);
         setSession(null);
         return;
       }
-      setSession(data.session);
+      setSession({ user } as Session); // Only set user, not full session
       // Fetch user profile from users table
-      const { data: userProfile, error: profileError } = await supabase.from('users').select('*').eq('id', data.session.user.id).single();
+      let { data: userProfile, error: profileError } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
       if (profileError) {
-        console.error('Profile fetch error:', profileError.message);
+        // Improved error logging for debugging
+        console.error('Profile fetch error:', profileError, profileError?.message, JSON.stringify(profileError));
+      }
+      // If no profile, create one
+      if (!userProfile) {
+        // Try to get GitHub username from user metadata
+        const github_username = user.user_metadata?.user_name || user.user_metadata?.preferred_username || '';
+        const avatar_url = user.user_metadata?.avatar_url || '';
+        const newProfile = {
+          id: user.id,
+          github_username,
+          display_name: user.user_metadata?.name || github_username || 'New User',
+          bio: '',
+          skills: '',
+          role_preference: '',
+          interests: '',
+          avatar_url,
+        };
+        const { error: insertError } = await supabase.from('users').insert([newProfile]);
+        if (insertError) {
+          // Improved error logging for debugging
+          console.error('Profile creation error:', insertError, insertError?.message, JSON.stringify(insertError));
+        } else {
+          // Refetch the profile after creation
+          const { data: createdProfile, error: refetchError } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+          if (refetchError) {
+            console.error('Profile refetch error:', refetchError, refetchError?.message, JSON.stringify(refetchError));
+          }
+          userProfile = createdProfile;
+        }
       }
       setProfile(userProfile);
       setLoading(false);
@@ -89,8 +119,27 @@ export default function OnboardPage() {
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-4">Set up your profile</h1>
-      <OnboardProfileForm initialProfile={profile} />
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 border border-zinc-200 dark:border-zinc-800 transition-colors">
+        <h1 className="text-4xl font-extrabold mb-2 text-zinc-900 dark:text-white tracking-tight">Set up your profile</h1>
+        <p className="mb-6 text-zinc-600 dark:text-zinc-400 text-lg">Complete your profile to get the best experience and connect with the community.</p>
+        <div className="mb-8 flex items-center gap-4">
+          <img
+            src={profile?.avatar_url as string || '/raccoon.png'}
+            alt="Avatar"
+            className="w-20 h-20 rounded-full border-4 border-primary-500 shadow-md bg-zinc-100 dark:bg-zinc-800 object-cover"
+          />
+          <div>
+            <div className="text-xl font-semibold text-zinc-900 dark:text-white">{profile?.display_name}</div>
+            <div className="text-zinc-500 dark:text-zinc-400 text-sm">@{profile?.github_username}</div>
+          </div>
+        </div>
+        <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-6 mb-6 border border-zinc-100 dark:border-zinc-700">
+          <OnboardProfileForm initialProfile={profile} />
+        </div>
+        <div className="text-center text-zinc-400 text-xs mt-6">
+          Your information is private and secure.
+        </div>
+      </div>
     </div>
   );
 }
