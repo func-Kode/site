@@ -2,16 +2,16 @@
 
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Button } from "@/components/ui/button";
-import { getOAuthRedirectPath } from "@/lib/supabase/server";
 
 export function LoginForm() {
   const handleGithubLogin = async () => {
     const supabase = createClientComponentClient();
+
     await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
         scopes: "read:user user:email repo read:discussion",
-        redirectTo: getOAuthRedirectPath("/dashboard"),
+        redirectTo: "https://main.d1y6vxwm1j5wrs.amplifyapp.com/dashboard",
       },
     });
   };
