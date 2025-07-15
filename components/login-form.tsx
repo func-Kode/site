@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Button } from "@/components/ui/button";
 
