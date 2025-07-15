@@ -21,9 +21,11 @@ export function LoginForm() {
       });
       if (error) {
         console.error("Supabase OAuth error:", error.message);
+      } else if (data?.url) {
+        console.log("Supabase OAuth initiated. Redirecting to:", data.url);
+        window.location.href = data.url;
       } else {
-        // data.url contains the redirect URL for the OAuth provider
-        console.log("Supabase OAuth initiated. Redirecting to:", data?.url || redirectTo);
+        console.warn("No redirect URL returned from Supabase OAuth.");
       }
     } catch (err) {
       console.error("Unexpected error during GitHub OAuth:", err);
@@ -33,6 +35,7 @@ export function LoginForm() {
   return (
     <div className="flex flex-col gap-6">
       <Button
+        type="button"
         onClick={handleGithubLogin}
         className="w-full bg-gray-900 hover:bg-gray-800 text-white"
       >
