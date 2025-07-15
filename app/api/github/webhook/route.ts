@@ -24,13 +24,13 @@ export async function POST(req: NextRequest) {
 }
 
 // Move logic to a background async handler (no await in main handler)
-async function handleGitHubEvent(eventType: string | null, payload: any) {
+async function handleGitHubEvent(eventType: string | null, payload: Record<string, unknown>) {
   console.log("Event received:", eventType);
   console.log("Payload:", payload);
 
-  const repo = payload.repository?.full_name;
-  const user = payload.sender?.login || payload.pull_request?.user?.login;
-  const action = payload.action || 'unknown';
+  const repo = (payload.repository as { full_name?: string })?.full_name;
+  const user = (payload.sender as { login?: string })?.login || (payload.pull_request as { user?: { login?: string } })?.user?.login;
+  const action = (payload.action as string) || 'unknown';
 
   const { error } = await supabase.from('activities').insert({
     event_type: eventType,

@@ -32,7 +32,6 @@ export default function OnboardProfileForm({
   };
   const [form, setForm] = useState(safeProfile);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -72,9 +71,6 @@ export default function OnboardProfileForm({
           <span className="text-lg font-semibold text-gray-800">@{form.github_username}</span>
           <span className="text-sm text-gray-500">GitHub User</span>
         </div>
-        {success && (
-          <div className="text-green-600 text-center font-semibold mb-2">Profile updated successfully!</div>
-        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block font-medium mb-1">Display Name</label>

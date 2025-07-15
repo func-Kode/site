@@ -2,9 +2,17 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./logout-button";
+import { cookies } from "next/headers";
+import type { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 
 export async function AuthButton() {
-  const supabase = await createClient();
+  // Always await cookies() as it returns a Promise in Next.js 14+
+  const cookieStore: ReadonlyRequestCookies = await cookies();
+  const cookieAdapter = {
+    getAll: () => cookieStore.getAll(),
+    set: () => {}, // no-op for server components
+  };
+  const supabase = createClient(cookieAdapter);
 
   const {
     data: { user },
