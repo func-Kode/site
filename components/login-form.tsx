@@ -2,6 +2,7 @@
 
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Button } from "@/components/ui/button";
+import { getOAuthRedirectPath } from "@/lib/supabase/server";
 
 export function LoginForm() {
   const handleGithubLogin = async () => {
@@ -10,7 +11,7 @@ export function LoginForm() {
       provider: "github",
       options: {
         scopes: "read:user user:email repo read:discussion",
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: getOAuthRedirectPath("/dashboard"),
       },
     });
   };
