@@ -11,7 +11,7 @@ export default function OnboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Record<string, unknown> | null>(null);
+  const [profile, setProfile] = useState<ProfileShape | null>(null);
 
   useEffect(() => {
     // Listen for auth state changes to restore session
@@ -22,47 +22,46 @@ export default function OnboardPage() {
     const getSessionAndProfile = async () => {
       // Use getUser for secure, authenticated user info
       const { data: { user }, error } = await supabase.auth.getUser();
-      console.log('Supabase user:', user, 'Error:', error);
       if (error || !user) {
         setLoading(false);
         setSession(null);
         return;
       }
-      setSession({ user } as Session); // Only set user, not full session
+      setSession({ user } as Session);
       // Fetch user profile from users table
-      const { data: userProfile, error: profileError } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+      const { data: userProfile } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
       let finalProfile = userProfile;
-      if (profileError) {
-        // Improved error logging for debugging
-        console.error('Profile fetch error:', profileError, profileError?.message, JSON.stringify(profileError));
-      }
+      // Prepare fallback/default profile
+      const github_username = user.user_metadata?.user_name || user.user_metadata?.preferred_username || 'newuser';
+      const avatar_url = user.user_metadata?.avatar_url || '';
+      const display_name = user.user_metadata?.name || github_username || 'New User';
+      const fallbackProfile = {
+        id: user.id,
+        github_username,
+        display_name,
+        bio: userProfile?.bio || '',
+        skills: userProfile?.skills || '',
+        role_preference: userProfile?.role_preference || '',
+        interests: userProfile?.interests || '',
+        avatar_url,
+      };
       // If no profile, create one
-      if (!finalProfile) {
-        // Try to get GitHub username from user metadata
-        const github_username = user.user_metadata?.user_name || user.user_metadata?.preferred_username || '';
-        const avatar_url = user.user_metadata?.avatar_url || '';
-        const newProfile = {
-          id: user.id,
-          github_username,
-          display_name: user.user_metadata?.name || github_username || 'New User',
-          bio: '',
-          skills: '',
-          role_preference: '',
-          interests: '',
-          avatar_url,
-        };
-        const { error: insertError } = await supabase.from('users').insert([newProfile]);
-        if (insertError) {
-          // Improved error logging for debugging
-          console.error('Profile creation error:', insertError, insertError?.message, JSON.stringify(insertError));
-        } else {
-          // Refetch the profile after creation
-          const { data: createdProfile, error: refetchError } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
-          if (refetchError) {
-            console.error('Profile refetch error:', refetchError, refetchError?.message, JSON.stringify(refetchError));
-          }
-          finalProfile = createdProfile;
-        }
+      if (!userProfile) {
+        const { error: insertError } = await supabase.from('users').insert([fallbackProfile]);
+        if (insertError) console.error('Profile creation error:', insertError);
+        finalProfile = fallbackProfile;
+      } else {
+        // Patch profile with defaults for missing fields
+        const { error: updateError } = await supabase
+          .from('users')
+          .update(fallbackProfile)
+          .eq('id', user.id);
+        if (updateError) console.error('Profile update error:', updateError);
+        finalProfile = { ...userProfile, ...fallbackProfile };
       }
       setProfile(finalProfile);
       setLoading(false);
@@ -105,6 +104,7 @@ export default function OnboardPage() {
     );
   }
 
+  // Only render OnboardProfileForm if profile is not null and isProfileShape(profile)
   if (loading) return <p className="text-center mt-10">Loading...</p>;
   if (!session) {
     return (
@@ -115,10 +115,6 @@ export default function OnboardPage() {
   }
   if (!profile && !loading) return <p className="text-center mt-10 text-red-500">Profile not found or error loading profile. Check your Supabase users table and triggers.</p>;
 
-  if (!isProfileShape(profile)) {
-    return <p className="text-center mt-10 text-red-500">Profile data is invalid or incomplete. Please contact support.</p>;
-  }
-
   return (
     <div className="max-w-3xl mx-auto py-10 px-4">
       <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 border border-zinc-200 dark:border-zinc-800 transition-colors">
@@ -126,7 +122,7 @@ export default function OnboardPage() {
         <p className="mb-6 text-zinc-600 dark:text-zinc-400 text-lg">Complete your profile to get the best experience and connect with the community.</p>
         <div className="mb-8 flex items-center gap-4">
           <Image
-            src={profile?.avatar_url as string || '/raccoon.png'}
+            src={profile?.avatar_url || '/raccoon.png'}
             alt="Avatar"
             width={80}
             height={80}
@@ -138,7 +134,9 @@ export default function OnboardPage() {
           </div>
         </div>
         <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-6 mb-6 border border-zinc-100 dark:border-zinc-700">
-          <OnboardProfileForm initialProfile={profile} />
+          {profile && isProfileShape(profile) && (
+            <OnboardProfileForm initialProfile={profile} />
+          )}
         </div>
         <div className="text-center text-zinc-400 text-xs mt-6">
           Your information is private and secure.
