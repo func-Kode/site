@@ -29,7 +29,7 @@ export default function OnboardPage() {
       }
       setSession({ user } as Session);
       // Fetch user profile from users table
-      const { data: userProfile, error: profileError } = await supabase
+      const { data: userProfile } = await supabase
         .from('users')
         .select('*')
         .eq('id', user.id)
