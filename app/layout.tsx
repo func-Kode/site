@@ -9,8 +9,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "funcKode | A developers' community",
+  description: "funcKode is a open source community.",
 };
 
 const inter = Inter({
@@ -22,7 +22,24 @@ const inter = Inter({
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
       <html lang="en" suppressHydrationWarning>
-        <body className={`${inter.className} antialiased`}>
+        <body className={inter.className}>
+            <head>
+                <title>funcKode | A developers&apos; community</title>
+                <meta name="description" content="funcKode is a modern web development platform for building scalable, fast, and secure web applications." />
+                <meta name="keywords" content="funcKode, web development, next.js, supabase, react, tailwind, modern, scalable, secure" />
+                <meta name="author" content="funcKode Team" />
+                <meta property="og:title" content="funcKode | Modern Web Development Platform" />
+                <meta property="og:description" content="Build scalable, fast, and secure web applications with funcKode." />
+                <meta property="og:image" content="/opengraph-image.png" />
+                <meta property="og:url" content="https://func-kode.netlify.app" />
+                <meta property="og:type" content="website" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="funcKode | A developers' community" />
+                <meta name="twitter:description" content="Build scalable, fast, and secure web applications with funcKode." />
+                <meta name="twitter:image" content="/twitter-image.png" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <link rel="icon" href="/raccoon.png" />
+            </head>
           <Navbar />
           {children}
         </body>
