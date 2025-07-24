@@ -1,4 +1,5 @@
 "use client";
+import { OnboardButton } from "@/components/onboard-button";
 import Link from "next/link";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ export function Navbar() {
         {user ? (
           <div className="flex items-center gap-2">
             <span className="text-sm text-brand-blue dark:text-brand-blue">{user.email}</span>
+            <OnboardButton />
             <LogoutButton />
           </div>
         ) : (

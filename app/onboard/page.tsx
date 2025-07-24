@@ -118,7 +118,51 @@ export default function OnboardPage() {
   return (
     <div className="max-w-3xl mx-auto py-10 px-4">
       <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 border border-zinc-200 dark:border-zinc-800 transition-colors">
-        <h1 className="text-4xl font-extrabold mb-2 text-zinc-900 dark:text-white tracking-tight">Set up your profile</h1>
+        <h1 className="text-4xl font-extrabold mb-2 text-brand-blue tracking-tight">Welcome to funcKode Onboarding 🚀</h1>
+        <section className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">Step-by-Step Visual Guidelines</h2>
+          <ol className="list-decimal ml-6 space-y-4">
+            <li>
+              <span className="font-semibold">How to Fork:</span> <br />
+              <span className="text-sm">Visit our <a href="https://github.com/func-Kode/site" className="text-brand-blue underline">GitHub repo</a> and click <span className="bg-gray-200 px-2 py-1 rounded">Fork</span> at the top right.</span>
+            </li>
+            <li>
+              <span className="font-semibold">How to Contribute:</span> <br />
+              <span className="text-sm">Clone your fork, create a new branch, make changes, and open a pull request. See our <a href="/CONTRIBUTING" className="text-brand-blue underline">Contributing Guide</a>.</span>
+            </li>
+            <li>
+              <span className="font-semibold">Join Sprints:</span> <br />
+              <span className="text-sm">Check the <a href="/events" className="text-brand-blue underline">Events</a> page for upcoming sprints and join the fun!</span>
+            </li>
+          </ol>
+        </section>
+        <section className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">Quick Start Checklist</h2>
+          <ul className="list-disc ml-6 space-y-2">
+            <li>Login to your account</li>
+            <li>Star our <a href="https://github.com/func-Kode/site" className="text-brand-blue underline">GitHub repo</a></li>
+            <li>Introduce yourself in the <a href="/discussion" className="text-brand-blue underline">community discussion</a></li>
+            <li>Join the next sprint via <a href="/events" className="text-brand-blue underline">Events</a></li>
+          </ul>
+        </section>
+        <section className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">FAQ</h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-semibold">How do I participate?</h3>
+              <p className="text-sm">Fork the repo, make changes, and submit a pull request. Join sprints and discussions for more collaboration.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold">Troubleshooting</h3>
+              <p className="text-sm">Check our <a href="/CONTRIBUTING" className="text-brand-blue underline">Contributing Guide</a> and <a href="/discussion" className="text-brand-blue underline">community discussion</a> for help. If you encounter issues, open a GitHub issue or ask in the chat.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold">Contact Information</h3>
+              <p className="text-sm">Reach out via <a href="mailto:hello@funckode.com" className="text-brand-blue underline">hello@funckode.com</a> or join our <a href="/discussion" className="text-brand-blue underline">community discussion</a>.</p>
+            </div>
+          </div>
+        </section>
+        <h2 className="text-2xl font-bold mb-4">Set up your profile</h2>
         <p className="mb-6 text-zinc-600 dark:text-zinc-400 text-lg">Complete your profile to get the best experience and connect with the community.</p>
         <div className="mb-8 flex items-center gap-4">
           <Image
