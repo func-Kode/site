@@ -2,7 +2,7 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -445,7 +445,7 @@ export default function ProjectsPage() {
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">No projects found</h3>
                 <p className="text-muted-foreground max-w-md">
-                  Try adjusting your search terms or filters to find what you're looking for.
+                  Try adjusting your search terms or filters to find what you&#39;re looking for.
                 </p>
                 <Button
                   onClick={() => {
@@ -594,8 +594,8 @@ export default function ProjectsPage() {
                 </h2>
               </div>
               <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
-                Built something amazing? Share it with our community! Whether it's a weekend project
-                or your next big idea, we'd love to see what you've created.
+                Built something amazing? Share it with our community! Whether it&#39;s a weekend project
+                or your next big idea, we&#39;d love to see what you&#39;ve created.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild size="lg" className="bg-gradient-to-r from-brand-green to-brand-green/80">

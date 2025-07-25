@@ -213,7 +213,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   // This would handle project submissions in a real app
-  const body = await request.json();
+  await request.json();
   
   // In a real app, you'd validate the data and save to database
   // For now, just return a success response

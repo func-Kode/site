@@ -10,7 +10,6 @@ import {
   Clock, 
   Users, 
   MapPin, 
-  ExternalLink, 
   Github, 
   ArrowLeft,
   Trophy,
@@ -300,7 +299,7 @@ export default function EventPage({ params }: EventPageProps) {
                 <CardContent className="p-6">
                   <h2 className="text-xl font-semibold mb-6 text-foreground flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-brand-green" />
-                    What You'll Learn
+                    What You&#39;ll Learn
                   </h2>
                   <ul className="space-y-3">
                     {event.whatYouWillLearn.map((item, index) => (

@@ -31,8 +31,9 @@ const projects = [
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context
 ) {
+  const { params } = context;
   const project = projects.find(p => p.id === params.id);
 
   if (!project) {
@@ -47,10 +48,11 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context
 ) {
+  const { params } = context;
   // This would handle project updates in a real app
-  const body = await request.json();
+  await request.json();
   
   // In a real app, you'd validate the data and update in database
   return NextResponse.json({
@@ -62,8 +64,9 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context
 ) {
+  const { params } = context;
   // This would handle project deletion in a real app
   return NextResponse.json({
     success: true,

@@ -30,7 +30,7 @@ export default function NotFound() {
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
               Looks like our raccoon got lost in the code jungle.<br />
-              Let's help you find your way back home.
+              Let&#39;s help you find your way back home.
             </p>
           </div>
         </div>

@@ -26,12 +26,12 @@ export default function AboutPage() {
           <Card className="border-0 shadow-lg card-hover">
             <CardContent className="p-6 md:p-8">
               <p className="text-lg leading-relaxed text-foreground">
-                At its core, <strong>func(Kode)</strong> is more than just a developer community — it's a movement.
-                We're building a hybrid space (both online and offline) where developers, coders, and tech enthusiasts
+                At its core, <strong>func(Kode)</strong> is more than just a developer community — it&#39;s a movement.
+                We&#39;re building a hybrid space (both online and offline) where developers, coders, and tech enthusiasts
                 can come together to collaborate, showcase projects, learn from one another, and push boundaries.
               </p>
               <p className="text-lg leading-relaxed text-foreground mt-4">
-                Whether you're writing your first line of code or launching your tenth startup, func(Kode) is designed
+                Whether you&#39;re writing your first line of code or launching your tenth startup, func(Kode) is designed
                 to be your home base — a place where your curiosity is encouraged, your skills are sharpened, and your voice matters.
               </p>
             </CardContent>
@@ -56,7 +56,7 @@ export default function AboutPage() {
             <CardContent className="p-8">
               <div className="flex items-center gap-3 mb-6">
                 <span className="text-3xl">🚀</span>
-                <h2 className="text-2xl font-bold text-foreground">What We're Building</h2>
+                    <h2 className="text-2xl font-bold text-foreground">What We&#39;re Building</h2>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-3">
@@ -85,9 +85,9 @@ export default function AboutPage() {
                 </div>
               </div>
               <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                <p className="text-center text-foreground font-medium">
-                  We're here to connect people, not just profiles. The idea is simple: <strong>Build. Share. Learn. Repeat.</strong>
-                </p>
+                    <p className="text-center text-foreground font-medium">
+                      We&#39;re here to connect people, not just profiles. The idea is simple: <strong>Build. Share. Learn. Repeat.</strong>
+                    </p>
               </div>
             </CardContent>
           </Card>
@@ -100,7 +100,7 @@ export default function AboutPage() {
                 <h2 className="text-2xl font-bold text-foreground">The Hybrid Experience</h2>
               </div>
               <p className="text-lg leading-relaxed text-foreground mb-6">
-                We believe the best tech communities exist beyond just pixels. That's why func(Kode) is built with a dual spirit:
+                We believe the best tech communities exist beyond just pixels. That&#39;s why func(Kode) is built with a dual spirit:
               </p>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="text-center p-6 bg-background rounded-lg shadow-sm">
@@ -115,7 +115,7 @@ export default function AboutPage() {
                 </div>
               </div>
               <p className="text-center text-foreground mt-6">
-                We're starting small — with a group of early contributors — and scaling thoughtfully.
+                We&#39;re starting small — with a group of early contributors — and scaling thoughtfully.
               </p>
             </CardContent>
           </Card>
@@ -125,7 +125,7 @@ export default function AboutPage() {
             <CardContent className="p-8">
               <div className="flex items-center gap-3 mb-6">
                 <span className="text-3xl">🧩</span>
-                <h2 className="text-2xl font-bold text-foreground">Why "func(Kode)"?</h2>
+                <h2 className="text-2xl font-bold text-foreground">Why &quot;func(Kode)&quot;?</h2>
               </div>
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
@@ -150,11 +150,11 @@ export default function AboutPage() {
             <CardContent className="p-8">
               <div className="flex items-center gap-3 mb-6">
                 <span className="text-3xl">👤</span>
-                <h2 className="text-2xl font-bold text-foreground">Who's Behind This?</h2>
+                <h2 className="text-2xl font-bold text-foreground">Who&#39;s Behind This?</h2>
               </div>
               <p className="text-lg leading-relaxed text-foreground">
-                Hi, I'm <strong>Basanth</strong>, the solo dev and founder behind this idea. What started as a weekend thought
-                has grown into a project with real momentum and mission. And now, you're part of it too.
+                Hi, I&#39;m <strong>Basanth</strong>, the solo dev and founder behind this idea. What started as a weekend thought
+                has grown into a project with real momentum and mission. And now, you&#39;re part of it too.
               </p>
             </CardContent>
           </Card>
@@ -167,7 +167,7 @@ export default function AboutPage() {
                 <h2 className="text-2xl font-bold text-foreground">Join the Movement</h2>
               </div>
               <p className="text-lg leading-relaxed text-foreground mb-6">
-                We're still early — and that's the best time to join. Whether you're a:
+                We&#39;re still early — and that&#39;s the best time to join. Whether you&#39;re a:
               </p>
               <div className="flex flex-wrap justify-center gap-3 mb-8">
                 <Badge variant="secondary" className="text-sm px-3 py-1">💻 Developer</Badge>
@@ -177,7 +177,7 @@ export default function AboutPage() {
                 <Badge variant="secondary" className="text-sm px-3 py-1">🧠 Hacker</Badge>
               </div>
               <p className="text-lg text-foreground mb-8">
-                There's a place for you here.
+                There&#39;s a place for you here.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild size="lg" className="bg-brand-blue hover:bg-brand-blue/90">
@@ -189,7 +189,7 @@ export default function AboutPage() {
               </div>
               <p className="text-sm text-muted-foreground mt-6">
                 → Join our Discord, explore the GitHub, and become a founding member of func(Kode).
-                Let's build the most human dev community — one line at a time.
+                Let&#39;s build the most human dev community — one line at a time.
               </p>
             </CardContent>
           </Card>

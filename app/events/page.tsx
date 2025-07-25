@@ -333,8 +333,8 @@ export default function EventsPage() {
               <div className="text-5xl mb-6">🚀</div>
               <h3 className="text-2xl font-bold mb-4 text-foreground">Want to Host Your Own Event?</h3>
               <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Have an idea for a workshop, meetup, or hackathon? We'd love to help you bring it to life! 
-                Share your ideas with the community and let's make it happen together.
+                Have an idea for a workshop, meetup, or hackathon? We&#39;d love to help you bring it to life! 
+                Share your ideas with the community and let&#39;s make it happen together.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild size="lg" className="bg-brand-blue hover:bg-brand-blue/90">

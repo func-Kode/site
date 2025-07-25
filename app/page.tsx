@@ -110,10 +110,10 @@ export default function HomePage() {
           {/* Intro */}
           <div className="max-w-3xl space-y-4">
             <h2 className="text-responsive-2xl font-semibold text-foreground leading-tight">
-              Welcome to func(Kode) — Where Code Meets Creativity!
+              Welcome to func(Kode) — Where Code Meets Creativity&#39;!
             </h2>
             <p className="text-responsive-base text-muted-foreground leading-relaxed">
-              A developers' community empowering developers with tips, projects, and insights. 
+              A developers&#39; community empowering developers with tips, projects, and insights. 
               Join our vibrant community and embark on a coding journey with our raccoon mascot!
             </p>
           </div>

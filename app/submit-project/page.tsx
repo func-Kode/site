@@ -1,7 +1,7 @@
+// import { Badge } from "@/components/ui/badge";
 "use client";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ import {
 
 export default function SubmitProjectPage() {
     // Helper function to safely handle string operations
-    const safeString = (value: any): string => {
+    const safeString = (value: unknown): string => {
         return typeof value === 'string' ? value : '';
     };
 
@@ -131,8 +131,8 @@ export default function SubmitProjectPage() {
                         </h1>
                     </div>
                     <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                        Share your amazing project with the func(Kode) community! Whether it's a weekend hack
-                        or your next big idea, we'd love to showcase your work.
+                        Share your amazing project with the func(Kode) community! Whether it&#39;s a weekend hack
+                        or your next big idea, we&#39;d love to showcase your work.
                     </p>
                 </div>
 
@@ -358,7 +358,7 @@ export default function SubmitProjectPage() {
                                             required
                                         />
                                         <p className="text-xs text-muted-foreground">
-                                            We'll use this to contact you about your submission. Not displayed publicly.
+                                            We&#39;ll use this to contact you about your submission. Not displayed publicly.
                                         </p>
                                     </div>
                                 </div>
