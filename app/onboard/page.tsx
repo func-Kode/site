@@ -134,6 +134,7 @@ export default function OnboardPage() {
             <li>
               <span className="font-semibold">Join Sprints:</span> <br />
               <span className="text-sm">Check the <Link href="/events" className="text-brand-blue underline">Events</Link> page for upcoming sprints and join the fun!</span>
+              <span className="text-sm">Check the <Link href="/events" className="text-brand-blue underline">Events</Link> page for upcoming sprints and join the fun!</span>
             </li>
           </ol>
         </section>

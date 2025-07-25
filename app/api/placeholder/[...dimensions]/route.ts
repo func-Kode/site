@@ -1,12 +1,13 @@
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export async function GET(
-  request: NextRequest,
-  context
+  _request: Request,
+  context: { params: Promise<{ dimensions: string[] }> }
 ) {
-  const [width, height] = context.params.dimensions;
-  
+  const { dimensions } = await context.params;
+  const [width, height] = dimensions;
+
   // Create a simple SVG placeholder
   const svg = `
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">

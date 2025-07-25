@@ -30,11 +30,11 @@ const projects = [
 ];
 
 export async function GET(
-  request: Request,
-  context
+  _request: Request,
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { params } = context;
-  const project = projects.find(p => p.id === params.id);
+  const { id } = await context.params;
+  const project = projects.find(p => p.id === id);
 
   if (!project) {
     return NextResponse.json(
@@ -48,9 +48,9 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  context
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { params } = context;
+  const { id } = await context.params;
   // This would handle project updates in a real app
   await request.json();
   
@@ -58,19 +58,19 @@ export async function PUT(
   return NextResponse.json({
     success: true,
     message: "Project updated successfully!",
-    projectId: params.id
+    projectId: id
   });
 }
 
 export async function DELETE(
-  request: Request,
-  context
+  _request: Request,
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { params } = context;
+  const { id } = await context.params;
   // This would handle project deletion in a real app
   return NextResponse.json({
     success: true,
     message: "Project deleted successfully!",
-    projectId: params.id
+    projectId: id
   });
 }
