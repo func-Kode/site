@@ -1,0 +1,18 @@
+{
+  "username": "basanth-pedapati",
+  "totalPoints": 3,
+  "contributions": [
+    {
+      "type": "pr_opened",
+      "points": 3,
+      "timestamp": "2025-07-25T21:36:14.211Z",
+      "evidence": {
+        "pr_number": 33
+      }
+    }
+  ],
+  "badges": [],
+  "milestones": [],
+  "joinDate": "2025-07-25",
+  "lastActivity": "2025-07-25"
+}
