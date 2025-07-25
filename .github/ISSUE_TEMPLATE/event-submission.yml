@@ -1,0 +1,120 @@
+name: 🎪 Event Submission
+description: Submit your project or contribution for a community event
+title: "[EVENT SUBMISSION] "
+labels: ["event-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🎪 Event Submission
+        
+        Submit your project or contribution for a func(Kode) community event!
+        
+        **Note:** After creating this issue, make sure to add the appropriate event label (e.g., `submission:hackathon-2024`)
+
+  - type: input
+    id: event-name
+    attributes:
+      label: Event Name
+      description: Which event is this submission for?
+      placeholder: e.g., "Ship in an Hour #1", "Hacktoberfest 2024"
+    validations:
+      required: true
+
+  - type: input
+    id: project-title
+    attributes:
+      label: Project/Submission Title
+      description: What's the name of your project or submission?
+      placeholder: e.g., "Awesome Todo App", "Documentation Improvements"
+    validations:
+      required: true
+
+  - type: textarea
+    id: project-description
+    attributes:
+      label: Project Description
+      description: Describe your project or contribution
+      placeholder: |
+        - What does your project do?
+        - What technologies did you use?
+        - What problem does it solve?
+    validations:
+      required: true
+
+  - type: input
+    id: repository-link
+    attributes:
+      label: Repository/Code Link
+      description: Link to your project repository or code
+      placeholder: https://github.com/username/project-name
+    validations:
+      required: true
+
+  - type: input
+    id: demo-link
+    attributes:
+      label: Demo/Live Link (Optional)
+      description: Link to a live demo, deployed version, or video demo
+      placeholder: https://your-project.vercel.app
+
+  - type: textarea
+    id: technologies-used
+    attributes:
+      label: Technologies Used
+      description: List the main technologies, frameworks, or tools you used
+      placeholder: |
+        - React
+        - Next.js
+        - TypeScript
+        - Tailwind CSS
+
+  - type: textarea
+    id: challenges-faced
+    attributes:
+      label: Challenges & Solutions
+      description: What challenges did you face and how did you solve them?
+      placeholder: Describe any interesting problems you encountered and your solutions...
+
+  - type: textarea
+    id: what-learned
+    attributes:
+      label: What You Learned
+      description: What did you learn while working on this project?
+      placeholder: Share your key learnings and insights...
+
+  - type: textarea
+    id: future-improvements
+    attributes:
+      label: Future Improvements
+      description: What would you add or improve if you had more time?
+      placeholder: List potential enhancements or features you'd like to add...
+
+  - type: input
+    id: team-members
+    attributes:
+      label: Team Members (if applicable)
+      description: List GitHub usernames of team members
+      placeholder: @username1, @username2
+
+  - type: checkboxes
+    id: submission-checklist
+    attributes:
+      label: Submission Checklist
+      description: Please confirm the following
+      options:
+        - label: My project is original work created during the event period
+          required: true
+        - label: I have included clear documentation/README
+          required: true
+        - label: My code is publicly accessible
+          required: true
+        - label: I agree to the event terms and community guidelines
+          required: true
+
+  - type: textarea
+    id: additional-notes
+    attributes:
+      label: Additional Notes
+      description: Any additional information you'd like to share
+      placeholder: Special thanks, inspiration, or other notes...
