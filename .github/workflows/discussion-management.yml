@@ -1,0 +1,155 @@
+name: Discussion Management
+
+on:
+  discussion:
+    types: [created]
+  schedule:
+    # Check discussions daily at 9 AM UTC
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+jobs:
+  welcome-new-discussant:
+    if: github.event_name == 'discussion' && github.event.action == 'created'
+    runs-on: ubuntu-latest
+    permissions:
+      discussions: write
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Welcome First-Time Discussant
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const author = context.payload.discussion.user.login;
+            const discussionNumber = context.payload.discussion.number;
+            
+            // Check if this is their first discussion
+            const userDiscussions = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${context.repo.owner}/${context.repo.repo} is:discussion author:${author}`
+            });
+            
+            if (userDiscussions.data.total_count === 1) {
+              const welcomeMessage = `🎉 Welcome to func(Kode) discussions, @${author}!\n\n` +
+                `Thank you for starting your first discussion! Here's how to make the most of our community:\n\n` +
+                `## 🏅 Earn Your Discussion Badge\n` +
+                `You're on your way to earning the **Discussion Starter** badge! Keep engaging with the community.\n\n` +
+                `## 🌟 Community Resources\n` +
+                `- 📚 [Contributing Guide](CONTRIBUTING.md) - Learn how to contribute\n` +
+                `- 🏆 [Leaderboard](/leaderboard) - See top community contributors\n` +
+                `- 🎯 [Badge System](community/BADGING_SYSTEM.md) - Discover all available badges\n` +
+                `- 💬 [Community Guidelines](CODE_OF_CONDUCT.md) - Our community standards\n\n` +
+                `## 🚀 Next Steps\n` +
+                `- ⭐ Star this repository to stay updated\n` +
+                `- 🔔 Watch for notifications on topics you're interested in\n` +
+                `- 🤝 Help answer other community questions\n` +
+                `- 🛠️ Consider contributing code or documentation\n\n` +
+                `Looking forward to your continued participation! 🎊`;
+
+              // Post welcome comment
+              await github.rest.discussions.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                discussion_number: discussionNumber,
+                body: welcomeMessage
+              });
+              
+              // Award discussion starter badge
+              await exec.exec('node', [
+                '.github/scripts/award-badge.js',
+                '--badge-type', 'discussion_starter',
+                '--username', author,
+                '--discussion-number', discussionNumber.toString()
+              ]);
+            }
+
+  manage-old-discussions:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      discussions: write
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Archive Old Discussions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            // Get all discussions
+            const discussions = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${context.repo.owner}/${context.repo.repo} is:discussion updated:<${thirtyDaysAgo.toISOString().split('T')[0]}`
+            });
+            
+            console.log(`Found ${discussions.data.items.length} discussions older than 30 days`);
+            
+            for (const discussion of discussions.data.items) {
+              // Skip if already archived or resolved
+              if (discussion.labels.some(label => 
+                ['archived', 'resolved', 'stale'].includes(label.name)
+              )) {
+                continue;
+              }
+              
+              // Check if discussion has recent activity
+              const comments = await github.rest.discussions.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                discussion_number: discussion.number
+              });
+              
+              const hasRecentActivity = comments.data.some(comment => 
+                new Date(comment.created_at) > thirtyDaysAgo
+              );
+              
+              if (!hasRecentActivity) {
+                // Add stale label and comment
+                const staleMessage = `🤖 This discussion has been automatically marked as stale because it hasn't had recent activity.\n\n` +
+                  `**What happens next?**\n` +
+                  `- If this discussion is still relevant, please add a comment to keep it active\n` +
+                  `- If no activity occurs within 7 days, it will be automatically archived\n` +
+                  `- You can always reopen archived discussions if needed\n\n` +
+                  `Thank you for your contribution to the community! 🙏`;
+
+                await github.rest.discussions.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  discussion_number: discussion.number,
+                  body: staleMessage
+                });
+                
+                // Add stale label (if your repo supports discussion labels)
+                console.log(`Marked discussion #${discussion.number} as stale`);
+              }
+            }
+            
+            // Archive discussions that have been stale for 7+ days
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            
+            const staleDiscussions = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${context.repo.owner}/${context.repo.repo} is:discussion label:stale updated:<${sevenDaysAgo.toISOString().split('T')[0]}`
+            });
+            
+            for (const discussion of staleDiscussions.data.items) {
+              const archiveMessage = `🗄️ This discussion has been automatically archived due to inactivity.\n\n` +
+                `The discussion remains accessible for reference, and you can always start a new discussion if you have related questions or ideas.\n\n` +
+                `Thank you for your participation! 🎉`;
+
+              await github.rest.discussions.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                discussion_number: discussion.number,
+                body: archiveMessage
+              });
+              
+              console.log(`Archived discussion #${discussion.number}`);
+            }

@@ -1,0 +1,224 @@
+name: Event Submission Tracker
+
+on:
+  issues:
+    types: [opened, labeled, closed]
+  pull_request:
+    types: [opened, labeled, closed]
+
+jobs:
+  track-event-submission:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Process Event Submission
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Check if this is an event submission
+            let isEventSubmission = false;
+            let eventName = '';
+            let submissionType = '';
+            let itemNumber = 0;
+            let author = '';
+            let title = '';
+            let htmlUrl = '';
+            
+            if (context.eventName === 'issues') {
+              const issue = context.payload.issue;
+              const labels = issue.labels.map(label => label.name);
+              
+              // Check for event submission labels (format: submission:event-name)
+              const submissionLabel = labels.find(label => label.startsWith('submission:'));
+              
+              if (submissionLabel) {
+                isEventSubmission = true;
+                eventName = submissionLabel.replace('submission:', '');
+                submissionType = 'issue';
+                itemNumber = issue.number;
+                author = issue.user.login;
+                title = issue.title;
+                htmlUrl = issue.html_url;
+              }
+            } else if (context.eventName === 'pull_request') {
+              const pr = context.payload.pull_request;
+              const labels = pr.labels.map(label => label.name);
+              
+              const submissionLabel = labels.find(label => label.startsWith('submission:'));
+              
+              if (submissionLabel) {
+                isEventSubmission = true;
+                eventName = submissionLabel.replace('submission:', '');
+                submissionType = 'pull_request';
+                itemNumber = pr.number;
+                author = pr.user.login;
+                title = pr.title;
+                htmlUrl = pr.html_url;
+              }
+            }
+            
+            if (!isEventSubmission) {
+              console.log('Not an event submission, skipping...');
+              return;
+            }
+            
+            console.log(`Processing ${submissionType} submission for event: ${eventName}`);
+            
+            // Load or create event log
+            const eventLogPath = `community/events/${eventName}/submissions.json`;
+            const eventLogDir = path.dirname(eventLogPath);
+            
+            if (!fs.existsSync(eventLogDir)) {
+              fs.mkdirSync(eventLogDir, { recursive: true });
+            }
+            
+            let eventLog = {
+              eventName,
+              submissions: [],
+              stats: {
+                totalSubmissions: 0,
+                uniqueContributors: 0,
+                lastUpdated: new Date().toISOString()
+              }
+            };
+            
+            if (fs.existsSync(eventLogPath)) {
+              eventLog = JSON.parse(fs.readFileSync(eventLogPath, 'utf8'));
+            }
+            
+            // Check if submission already exists
+            const existingSubmission = eventLog.submissions.find(
+              sub => sub.type === submissionType && sub.number === itemNumber
+            );
+            
+            if (context.payload.action === 'opened' || context.payload.action === 'labeled') {
+              if (!existingSubmission) {
+                // Add new submission
+                const submission = {
+                  type: submissionType,
+                  number: itemNumber,
+                  title,
+                  author,
+                  url: htmlUrl,
+                  submittedAt: new Date().toISOString(),
+                  status: 'submitted'
+                };
+                
+                eventLog.submissions.push(submission);
+                eventLog.stats.totalSubmissions = eventLog.submissions.length;
+                eventLog.stats.uniqueContributors = new Set(eventLog.submissions.map(s => s.author)).size;
+                eventLog.stats.lastUpdated = new Date().toISOString();
+                
+                // Save updated log
+                fs.writeFileSync(eventLogPath, JSON.stringify(eventLog, null, 2));
+                
+                // Award event participation badge
+                await exec.exec('node', [
+                  '.github/scripts/award-badge.js',
+                  '--badge-type', 'event_participation',
+                  '--username', author,
+                  '--event-name', eventName
+                ]);
+                
+                // Create/update event markdown file
+                await updateEventMarkdown(eventName, eventLog);
+                
+                // Comment on submission
+                const thankYouMessage = `🎉 Thank you for your submission to **${eventName}**!\n\n` +
+                  `Your ${submissionType === 'issue' ? 'project' : 'contribution'} has been registered for the event.\n\n` +
+                  `## 🏅 Badge Awarded\n` +
+                  `You've earned the **Event Participant** badge for ${eventName}!\n\n` +
+                  `## 📊 Event Stats\n` +
+                  `- **Total Submissions:** ${eventLog.stats.totalSubmissions}\n` +
+                  `- **Unique Contributors:** ${eventLog.stats.uniqueContributors}\n\n` +
+                  `## 🔗 Event Page\n` +
+                  `Check out all submissions: [Event Log](community/events/${eventName}/README.md)\n\n` +
+                  `Keep up the great work! 🚀`;
+
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: itemNumber,
+                  body: thankYouMessage
+                });
+              }
+            } else if (context.payload.action === 'closed' && existingSubmission) {
+              // Update submission status
+              existingSubmission.status = submissionType === 'pull_request' && 
+                context.payload.pull_request.merged ? 'merged' : 'closed';
+              existingSubmission.closedAt = new Date().toISOString();
+              
+              eventLog.stats.lastUpdated = new Date().toISOString();
+              fs.writeFileSync(eventLogPath, JSON.stringify(eventLog, null, 2));
+              
+              await updateEventMarkdown(eventName, eventLog);
+            }
+            
+            async function updateEventMarkdown(eventName, eventLog) {
+              const eventReadmePath = `community/events/${eventName}/README.md`;
+              
+              let eventMarkdown = `# ${eventName} Event\n\n`;
+              eventMarkdown += `## 📊 Event Statistics\n\n`;
+              eventMarkdown += `- **Total Submissions:** ${eventLog.stats.totalSubmissions}\n`;
+              eventMarkdown += `- **Unique Contributors:** ${eventLog.stats.uniqueContributors}\n`;
+              eventMarkdown += `- **Last Updated:** ${new Date(eventLog.stats.lastUpdated).toLocaleDateString()}\n\n`;
+              
+              eventMarkdown += `## 🎯 Submissions\n\n`;
+              
+              if (eventLog.submissions.length === 0) {
+                eventMarkdown += `*No submissions yet. Be the first to participate!*\n\n`;
+              } else {
+                eventMarkdown += `| Author | Title | Type | Status | Submitted |\n`;
+                eventMarkdown += `|--------|-------|------|--------|-----------|\n`;
+                
+                eventLog.submissions
+                  .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
+                  .forEach(submission => {
+                    const statusEmoji = {
+                      'submitted': '📝',
+                      'merged': '✅',
+                      'closed': '❌'
+                    }[submission.status] || '📝';
+                    
+                    const date = new Date(submission.submittedAt).toLocaleDateString();
+                    eventMarkdown += `| [@${submission.author}](https://github.com/${submission.author}) | [${submission.title}](${submission.url}) | ${submission.type === 'pull_request' ? 'PR' : 'Issue'} | ${statusEmoji} ${submission.status} | ${date} |\n`;
+                  });
+                
+                eventMarkdown += `\n`;
+              }
+              
+              eventMarkdown += `## 🏅 Participant Badges\n\n`;
+              eventMarkdown += `All participants automatically receive the **Event Participant** badge!\n\n`;
+              eventMarkdown += `## 🚀 How to Participate\n\n`;
+              eventMarkdown += `1. Create an issue or pull request for your submission\n`;
+              eventMarkdown += `2. Add the label \`submission:${eventName}\` to your issue/PR\n`;
+              eventMarkdown += `3. Your submission will be automatically tracked here\n`;
+              eventMarkdown += `4. Earn your Event Participant badge!\n\n`;
+              eventMarkdown += `---\n`;
+              eventMarkdown += `*This page is automatically updated when new submissions are made.*\n`;
+              
+              fs.writeFileSync(eventReadmePath, eventMarkdown);
+            }
+
+      - name: Commit event data
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🎪 Updated event submission data"
+          file_pattern: "community/events/**/*"

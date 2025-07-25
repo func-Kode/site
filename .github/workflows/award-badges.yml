@@ -1,0 +1,81 @@
+name: Award Community Badges
+
+on:
+  pull_request:
+    types: [closed]
+  issues:
+    types: [closed]
+  pull_request_review:
+    types: [submitted]
+  workflow_dispatch:
+    inputs:
+      badge_type:
+        description: 'Badge type to award'
+        required: true
+        type: choice
+        options:
+          - event_participation
+          - project_submission
+          - top_contributor
+      username:
+        description: 'GitHub username'
+        required: true
+        type: string
+
+jobs:
+  award-badge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+      issues: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm install js-yaml
+
+      - name: Determine badge type and user
+        id: badge-info
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+            echo "badge_type=first_pr" >> $GITHUB_OUTPUT
+            echo "username=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
+            echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "issues" ] && [ "${{ github.event.action }}" = "closed" ]; then
+            echo "badge_type=issue_resolver" >> $GITHUB_OUTPUT
+            echo "username=${{ github.event.issue.user.login }}" >> $GITHUB_OUTPUT
+            echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "pull_request_review" ]; then
+            echo "badge_type=code_reviewer" >> $GITHUB_OUTPUT
+            echo "username=${{ github.event.review.user.login }}" >> $GITHUB_OUTPUT
+            echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "badge_type=${{ github.event.inputs.badge_type }}" >> $GITHUB_OUTPUT
+            echo "username=${{ github.event.inputs.username }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Award Badge
+        run: |
+          node .github/scripts/award-badge.js \
+            --badge-type "${{ steps.badge-info.outputs.badge_type }}" \
+            --username "${{ steps.badge-info.outputs.username }}" \
+            --pr-number "${{ steps.badge-info.outputs.pr_number }}" \
+            --issue-number "${{ steps.badge-info.outputs.issue_number }}"
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🏅 Awarded ${{ steps.badge-info.outputs.badge_type }} badge to @${{ steps.badge-info.outputs.username }}"
+          file_pattern: "CONTRIBUTORS.md community/badges/*.json"
