@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/navbar";
+import { Providers } from "@/components/providers";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -10,7 +11,46 @@ const defaultUrl = process.env.VERCEL_URL
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "funcKode | A developers' community",
-  description: "funcKode is a open source community.",
+  description: "funcKode is a modern web development platform for building scalable, fast, and secure web applications.",
+  keywords: ["funcKode", "web development", "next.js", "supabase", "react", "tailwind", "modern", "scalable", "secure"],
+  authors: [{ name: "funcKode Team" }],
+  openGraph: {
+    title: "funcKode | Modern Web Development Platform",
+    description: "Build scalable, fast, and secure web applications with funcKode.",
+    images: ["/opengraph-image.png"],
+    url: "https://func-kode.netlify.app",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "funcKode | A developers' community",
+    description: "Build scalable, fast, and secure web applications with funcKode.",
+    images: ["/twitter-image.png"],
+  },
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/raccoon.png", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: "/favicon-32x32.png",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      {
+        rel: "icon",
+        type: "image/svg+xml",
+        url: "/icon.svg",
+      },
+    ],
+  },
+  manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 const inter = Inter({
@@ -21,28 +61,13 @@ const inter = Inter({
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-      <html lang="en" suppressHydrationWarning>
-        <body className={inter.className}>
-            <head>
-                <title>funcKode | A developers&apos; community</title>
-                <meta name="description" content="funcKode is a modern web development platform for building scalable, fast, and secure web applications." />
-                <meta name="keywords" content="funcKode, web development, next.js, supabase, react, tailwind, modern, scalable, secure" />
-                <meta name="author" content="funcKode Team" />
-                <meta property="og:title" content="funcKode | Modern Web Development Platform" />
-                <meta property="og:description" content="Build scalable, fast, and secure web applications with funcKode." />
-                <meta property="og:image" content="/opengraph-image.png" />
-                <meta property="og:url" content="https://func-kode.netlify.app" />
-                <meta property="og:type" content="website" />
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content="funcKode | A developers' community" />
-                <meta name="twitter:description" content="Build scalable, fast, and secure web applications with funcKode." />
-                <meta name="twitter:image" content="/twitter-image.png" />
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <link rel="icon" href="/raccoon.png" />
-            </head>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <Providers>
           <Navbar />
           {children}
-        </body>
-      </html>
+        </Providers>
+      </body>
+    </html>
   );
 }

@@ -30,7 +30,7 @@ const projects = [
 ];
 
 export async function GET(
-  request: Request,
+  _request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
@@ -63,7 +63,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  _request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;

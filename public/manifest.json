@@ -1,0 +1,37 @@
+{
+  "name": "funcKode - A developers' community",
+  "short_name": "funcKode",
+  "description": "funcKode is a modern web development platform for building scalable, fast, and secure web applications.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F7F7",
+  "theme_color": "#2E4053",
+  "icons": [
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/raccoon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/raccoon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["developer-tools", "productivity", "education"],
+  "lang": "en",
+  "dir": "ltr",
+  "orientation": "portrait-primary"
+}
