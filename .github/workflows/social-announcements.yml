@@ -1,5 +1,8 @@
 name: Social Announcements
 
+permissions:
+  contents: read
+
 on:
   workflow_run:
     workflows: ["Award Community Badges", "Monthly Top Contributor"]
