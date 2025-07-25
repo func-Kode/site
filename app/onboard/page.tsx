@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { createClientComponentClient, Session } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import OnboardProfileForm from "@/components/onboard-profile-form";
@@ -132,7 +133,7 @@ export default function OnboardPage() {
             </li>
             <li>
               <span className="font-semibold">Join Sprints:</span> <br />
-              <span className="text-sm">Check the <a href="/events" className="text-brand-blue underline">Events</a> page for upcoming sprints and join the fun!</span>
+              <span className="text-sm">Check the <Link href="/events" className="text-brand-blue underline">Events</Link> page for upcoming sprints and join the fun!</span>
             </li>
           </ol>
         </section>
@@ -142,7 +143,7 @@ export default function OnboardPage() {
             <li>Login to your account</li>
             <li>Star our <a href="https://github.com/func-Kode/site" className="text-brand-blue underline">GitHub repo</a></li>
             <li>Introduce yourself in the <a href="/discussion" className="text-brand-blue underline">community discussion</a></li>
-            <li>Join the next sprint via <a href="/events" className="text-brand-blue underline">Events</a></li>
+            <li>Join the next sprint via <Link href="/events" className="text-brand-blue underline">Events</Link></li>
           </ul>
         </section>
         <section className="mb-8">
