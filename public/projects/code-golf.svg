@@ -1,0 +1,59 @@
+<svg width="400" height="250" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#ef4444;stop-opacity:0.1" />
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="#fefce8"/>
+  <rect width="100%" height="100%" fill="url(#bg)"/>
+  
+  <!-- Game interface -->
+  <rect x="50" y="40" width="300" height="160" rx="12" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+  
+  <!-- Header -->
+  <rect x="50" y="40" width="300" height="35" rx="12" fill="#f59e0b"/>
+  <text x="200" y="60" font-family="Inter, sans-serif" font-size="12" fill="white" text-anchor="middle" font-weight="bold">Code Golf Challenge</text>
+  
+  <!-- Challenge description -->
+  <text x="70" y="95" font-family="Inter, sans-serif" font-size="9" fill="#374151" font-weight="600">Challenge: Reverse a string in the shortest code possible</text>
+  
+  <!-- Code editor -->
+  <rect x="70" y="105" width="260" height="60" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="80" y="120" font-family="Monaco, monospace" font-size="8" fill="#10b981">def r(s):</text>
+  <text x="80" y="132" font-family="Monaco, monospace" font-size="8" fill="#3b82f6">  return s[::-1]</text>
+  <text x="80" y="155" font-family="Monaco, monospace" font-size="7" fill="#64748b"># 23 characters</text>
+  
+  <!-- Leaderboard -->
+  <rect x="70" y="175" width="120" height="15" fill="#10b981" opacity="0.1" rx="2"/>
+  <text x="75" y="185" font-family="Inter, sans-serif" font-size="7" fill="#065f46" font-weight="600">🥇 Alice: 15 chars</text>
+  
+  <rect x="200" y="175" width="130" height="15" fill="#f59e0b" opacity="0.1" rx="2"/>
+  <text x="205" y="185" font-family="Inter, sans-serif" font-size="7" fill="#92400e" font-weight="600">🥈 Bob: 18 chars</text>
+  
+  <!-- Trophy -->
+  <circle cx="320" cy="130" r="15" fill="#f59e0b"/>
+  <text x="320" y="136" font-family="Inter, sans-serif" font-size="16" text-anchor="middle">🏆</text>
+  
+  <!-- Score display -->
+  <rect x="280" y="100" width="50" height="20" rx="4" fill="#ef4444"/>
+  <text x="305" y="113" font-family="Inter, sans-serif" font-size="8" fill="white" text-anchor="middle" font-weight="bold">Score: 85</text>
+  
+  <!-- Timer -->
+  <circle cx="80" cy="130" r="8" fill="#3b82f6"/>
+  <text x="80" y="134" font-family="Inter, sans-serif" font-size="6" fill="white" text-anchor="middle" font-weight="bold">⏱</text>
+  <text x="95" y="134" font-family="Inter, sans-serif" font-size="7" fill="#374151">2:34</text>
+  
+  <!-- Language selector -->
+  <rect x="250" y="85" width="60" height="15" rx="3" fill="#8b5cf6"/>
+  <text x="280" y="95" font-family="Inter, sans-serif" font-size="7" fill="white" text-anchor="middle">Python</text>
+  
+  <!-- Fun elements -->
+  <text x="30" y="60" font-size="20" fill="#f59e0b">⛳</text>
+  <text x="370" y="80" font-size="16" fill="#10b981">🎯</text>
+  <text x="30" y="180" font-size="14" fill="#ef4444">🔥</text>
+  <text x="370" y="200" font-size="12" fill="#3b82f6">💻</text>
+  
+  <!-- Title -->
+  <text x="200" y="240" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="#1e293b" text-anchor="middle">Code Golf Challenge</text>
+</svg>
