@@ -1,0 +1,38 @@
+name: Social Announcements
+
+on:
+  workflow_run:
+    workflows: ["Award Community Badges", "Monthly Top Contributor"]
+    types:
+      - completed
+
+jobs:
+  announce-achievements:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Check for Discord configuration
+        id: check-secrets
+        run: |
+          if [[ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]]; then
+            echo "has-config=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-config=false" >> $GITHUB_OUTPUT
+            echo "⚠️ No Discord webhook configured. Skipping announcements."
+          fi
+
+      - name: Generate Social Announcements
+        if: steps.check-secrets.outputs.has-config == 'true'
+        run: |
+          node .github/scripts/generate-social-announcements.js
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
