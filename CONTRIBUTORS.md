@@ -78,6 +78,7 @@ Our community features a comprehensive gamification system with XP, levels, stre
 | User | Badges |
 |------|--------|
 | @basanth | [![First PR](https://img.shields.io/badge/First%20PR-👍-green)](https://github.com/func-Kode/site "Merged their first pull request") [![Top Contributor](https://img.shields.io/badge/Top%20Contributor-⭐-gold)](https://github.com/func-Kode/site "Top contributor of the month") [![Community Champion](https://img.shields.io/badge/Community%20Champion-👑-purple)](https://github.com/func-Kode/site "Participated in 5 events") |
+| @basanth-pedapati | [![First PR](https://img.shields.io/badge/First%20PR-%F0%9F%91%8D-green)](https://github.com/func-Kode/site/pull/32 "Merged their first pull request") |
 
 ---
 
