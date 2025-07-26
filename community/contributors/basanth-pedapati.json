@@ -1,6 +1,6 @@
 {
   "username": "basanth-pedapati",
-  "totalPoints": 8,
+  "totalPoints": 10,
   "contributions": [
     {
       "type": "pr_opened",
@@ -24,6 +24,14 @@
       "timestamp": "2025-07-26T04:58:27.794Z",
       "evidence": {
         "issue_number": 35
+      }
+    },
+    {
+      "type": "issue_opened",
+      "points": 2,
+      "timestamp": "2025-07-26T05:01:17.304Z",
+      "evidence": {
+        "issue_number": 36
       }
     }
   ],
