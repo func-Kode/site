@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/navbar";
 import { Providers } from "@/components/providers";
+import { DebugConsoleProvider } from "@/components/debug-console-provider";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -60,12 +61,16 @@ const inter = Inter({
 });
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const isDebugEnabled = process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_ENABLE_DEBUG_CONSOLE === 'true';
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <Providers>
-          <Navbar />
-          {children}
+          <DebugConsoleProvider enabled={isDebugEnabled}>
+            <Navbar />
+            {children}
+          </DebugConsoleProvider>
         </Providers>
       </body>
     </html>

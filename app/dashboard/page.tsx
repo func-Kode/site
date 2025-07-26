@@ -284,6 +284,60 @@ export default function DashboardPage() {
 				</p>
 			</div>
 
+			{/* Debug Console Test Section - Remove in production */}
+			{process.env.NODE_ENV === 'development' && (
+				<section className="w-full mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+					<h3 className="text-lg font-semibold mb-4 text-yellow-800 dark:text-yellow-200">
+						Debug Console Test (Development Only)
+					</h3>
+					<p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
+						Press <kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-xs">Ctrl+D</kbd> to toggle the debug console, then test the buttons below:
+					</p>
+					<div className="flex flex-wrap gap-2">
+						<button
+							onClick={() => console.log('Hello from funcKode dashboard!', { timestamp: new Date(), user: user?.email })}
+							className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+						>
+							Test console.log
+						</button>
+						<button
+							onClick={() => console.warn('This is a warning message', { level: 'warning', component: 'dashboard' })}
+							className="px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600"
+						>
+							Test console.warn
+						</button>
+						<button
+							onClick={() => console.error('This is an error message', { level: 'error', stack: 'fake-stack-trace' })}
+							className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
+						>
+							Test console.error
+						</button>
+						<button
+							onClick={() => {
+								for (let i = 0; i < 5; i++) {
+									setTimeout(() => console.log(`Batch message ${i + 1}`, { batch: true, index: i }), i * 500);
+								}
+							}}
+							className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+						>
+							Test Multiple Logs
+						</button>
+						<button
+							onClick={() => {
+								console.log('Complex object test:', {
+									user: { id: 1, name: 'John Doe', preferences: { theme: 'dark', notifications: true } },
+									data: [1, 2, 3, { nested: 'value' }],
+									timestamp: new Date().toISOString()
+								});
+							}}
+							className="px-3 py-1 bg-purple-500 text-white rounded text-sm hover:bg-purple-600"
+						>
+							Test Complex Object
+						</button>
+					</div>
+				</section>
+			)}
+
 			{/* Organization-wide Issue Tracker */}
 			<section className="w-full mt-8">
 				<h2 className="text-2xl font-bold text-brand-blue dark:text-brand-blue mb-4">
@@ -467,4 +521,3 @@ function ContributionGraph({ data }: { data: { date: string, count: number }[] }
     </svg>
   );
 }
-
