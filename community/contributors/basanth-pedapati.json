@@ -1,18 +1,42 @@
 {
   "username": "basanth-pedapati",
-  "totalPoints": 3,
+  "totalPoints": 10,
   "contributions": [
     {
       "type": "pr_opened",
       "points": 3,
-      "timestamp": "2025-07-25T21:19:48.974Z",
+      "timestamp": "2025-07-25T21:36:14.211Z",
       "evidence": {
-        "pr_number": 32
+        "pr_number": 33
+      }
+    },
+    {
+      "type": "pr_opened",
+      "points": 3,
+      "timestamp": "2025-07-25T21:37:32.469Z",
+      "evidence": {
+        "pr_number": 34
+      }
+    },
+    {
+      "type": "issue_opened",
+      "points": 2,
+      "timestamp": "2025-07-26T04:58:27.794Z",
+      "evidence": {
+        "issue_number": 35
+      }
+    },
+    {
+      "type": "issue_opened",
+      "points": 2,
+      "timestamp": "2025-07-26T05:01:17.304Z",
+      "evidence": {
+        "issue_number": 36
       }
     }
   ],
   "badges": [],
   "milestones": [],
   "joinDate": "2025-07-25",
-  "lastActivity": "2025-07-25"
+  "lastActivity": "2025-07-26"
 }

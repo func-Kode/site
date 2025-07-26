@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const _ = require('lodash');
 
 // Badge configurations with XP values and levels
 const BADGE_CONFIGS = {
@@ -277,7 +278,8 @@ Thank you to all the amazing contributors who have helped make func(Kode) awesom
   }
   
   // Check if user already has an entry
-  const userPattern = new RegExp(`\\| @${username}\\s*\\|([^\\n]*)\\|`, 'g');
+  const safeUsername = _.escapeRegExp(username);
+  const userPattern = new RegExp(`\\| @${safeUsername}\\s*\\|([^\\n]*)\\|`, 'g');
   const match = userPattern.exec(content);
   
   if (match) {
