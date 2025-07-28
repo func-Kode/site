@@ -1,4 +1,3 @@
-// import { Badge } from "@/components/ui/badge";
 "use client";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,8 +13,15 @@ import {
     Code,
     FileText,
     CheckCircle,
-    AlertCircle
+    AlertCircle,
+    ChevronDown
 } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function SubmitProjectPage() {
     // Helper function to safely handle string operations
@@ -296,34 +302,54 @@ export default function SubmitProjectPage() {
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <Label htmlFor="category">Category *</Label>
-                                    <select
-                                        id="category"
-                                        name="category"
-                                        value={formData.category}
-                                        onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                                        required
-                                    >
-                                        {categories.map(category => (
-                                            <option key={category} value={category}>{category}</option>
-                                        ))}
-                                    </select>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-between px-3 py-2 h-auto min-h-[2.5rem] border border-input bg-background hover:bg-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                            >
+                                                {formData.category}
+                                                <ChevronDown className="h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-full min-w-[var(--radix-dropdown-menu-trigger-width)]">
+                                            {categories.map(category => (
+                                                <DropdownMenuItem
+                                                    key={category}
+                                                    onClick={() => setFormData(prev => ({ ...prev, category }))}
+                                                    className="cursor-pointer"
+                                                >
+                                                    {category}
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="difficulty">Difficulty Level *</Label>
-                                    <select
-                                        id="difficulty"
-                                        name="difficulty"
-                                        value={formData.difficulty}
-                                        onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                                        required
-                                    >
-                                        {difficulties.map(difficulty => (
-                                            <option key={difficulty} value={difficulty}>{difficulty}</option>
-                                        ))}
-                                    </select>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-between px-3 py-2 h-auto min-h-[2.5rem] border border-input bg-background hover:bg-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                            >
+                                                {formData.difficulty}
+                                                <ChevronDown className="h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-full min-w-[var(--radix-dropdown-menu-trigger-width)]">
+                                            {difficulties.map(difficulty => (
+                                                <DropdownMenuItem
+                                                    key={difficulty}
+                                                    onClick={() => setFormData(prev => ({ ...prev, difficulty }))}
+                                                    className="cursor-pointer"
+                                                >
+                                                    {difficulty}
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             </div>
 
