@@ -1,6 +1,6 @@
 {
   "username": "basanth-pedapati",
-  "totalPoints": 15,
+  "totalPoints": 16,
   "contributions": [
     {
       "type": "pr_opened",
@@ -49,10 +49,18 @@
       "evidence": {
         "issue_number": 39
       }
+    },
+    {
+      "type": "pr_merged",
+      "points": 1,
+      "timestamp": "2025-07-29T05:55:24.079Z",
+      "evidence": {
+        "pr_number": 40
+      }
     }
   ],
   "badges": [],
   "milestones": [],
   "joinDate": "2025-07-25",
-  "lastActivity": "2025-07-26"
+  "lastActivity": "2025-07-29"
 }
