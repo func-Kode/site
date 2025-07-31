@@ -1,10 +1,14 @@
 "use client";
-import { useState } from "react";
-import { createClient } from '@supabase/supabase-js';
+import { useState, useEffect } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import type { User } from "@supabase/supabase-js";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { z } from "zod";
-import { CheckCircle, AlertCircle, Loader2, Mail, User, MessageCircle } from "lucide-react";
+import { CheckCircle, AlertCircle, Loader2, Mail, User, MessageCircle, Phone, Github, GraduationCap, Target, MapPin } from "lucide-react";
 
 function showToast(message: string, type: 'success' | 'error' = 'success') {
   const existingToast = document.querySelector('[data-toast]');
@@ -50,22 +54,37 @@ function showToast(message: string, type: 'success' | 'error' = 'success') {
   }, 3000);
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export default function RSVPPage() {
+  const [user, setUser] = useState<User | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [response, setResponse] = useState('');
+  const [phone, setPhone] = useState('');
+  const [github, setGithub] = useState('');
+  const [role, setRole] = useState('');
+  const [goal, setGoal] = useState<string[]>([]);
+  const [attendance, setAttendance] = useState('virtual');
+  const [comments, setComments] = useState('');
+
+  useEffect(() => {
+    const supabase = createClientComponentClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      setEmail(data.user?.email || "");
+      setGithub(data.user?.user_metadata?.github_username || "");
+    });
+  }, []);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const rsvpSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
     email: z.string().email("Please enter a valid email address"),
-    response: z.string().min(1, "Please provide a response")
+    phone: z.string().min(10, "Phone number must be at least 10 digits"),
+    role: z.string().min(1, "Please select your role"),
+    goal: z.array(z.string()).min(1, "Please select at least one goal"),
+    attendance: z.string().min(1, "Please select attendance type")
   });
 
   const [errors, setErrors] = useState<{[key: string]: string}>({});
@@ -74,14 +93,20 @@ export default function RSVPPage() {
     return err instanceof z.ZodError;
   };
 
-  const validateField = (field: string, value: string) => {
+  const validateField = (field: string, value: string | string[]) => {
     try {
       if (field === 'name') {
         rsvpSchema.shape.name.parse(value);
       } else if (field === 'email') {
         rsvpSchema.shape.email.parse(value);
-      } else if (field === 'response') {
-        rsvpSchema.shape.response.parse(value);
+      } else if (field === 'phone') {
+        rsvpSchema.shape.phone.parse(value);
+      } else if (field === 'role') {
+        rsvpSchema.shape.role.parse(value);
+      } else if (field === 'goal') {
+        rsvpSchema.shape.goal.parse(value);
+      } else if (field === 'attendance') {
+        rsvpSchema.shape.attendance.parse(value);
       }
       setErrors(prev => ({ ...prev, [field]: '' }));
     } catch (error: unknown) {
@@ -97,7 +122,7 @@ export default function RSVPPage() {
     setErrors({});
 
     try {
-      rsvpSchema.parse({ name, email, response });
+      rsvpSchema.parse({ name, email, phone, role, goal, attendance });
     } catch (error: unknown) {
       if (isZodError(error)) {
         const fieldErrors: {[key: string]: string} = {};
@@ -114,8 +139,19 @@ export default function RSVPPage() {
     }
 
     try {
-      const { error } = await supabase.from('rsvp').insert([
-        { name, email, response }
+      const supabase = createClientComponentClient();
+      const { error } = await supabase.from('rsvp_responses').insert([
+        { 
+          name, 
+          email, 
+          phone, 
+          github_username: github, 
+          role, 
+          goals: goal, 
+          attendance_type: attendance, 
+          comments: comments || null,
+          user_id: user?.id || null
+        }
       ]);
 
       if (error) {
@@ -126,7 +162,11 @@ export default function RSVPPage() {
       setSubmitted(true);
       setName("");
       setEmail("");
-      setResponse("");
+      setPhone("");
+      setRole("");
+      setGoal([]);
+      setAttendance('virtual');
+      setComments("");
       
       // Reset submitted state after 5 seconds
       setTimeout(() => setSubmitted(false), 5000);
@@ -165,7 +205,7 @@ export default function RSVPPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
-      <div className="max-w-md mx-auto w-full">
+      <div className="max-w-lg mx-auto w-full">
         <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-8 pb-6">
@@ -236,38 +276,146 @@ export default function RSVPPage() {
               )}
             </div>
 
-            {/* Response Field */}
+            {/* Phone Field */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                <MessageCircle className="w-4 h-4" />
-                Response
+                <Phone className="w-4 h-4" />
+                Phone Number
+              </label>
+              <Input
+                placeholder="Enter your phone number"
+                type="tel"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  if (errors.phone) validateField('phone', e.target.value);
+                }}
+                onBlur={(e) => validateField('phone', e.target.value)}
+                className={`transition-all duration-200 ${
+                  errors.phone 
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' 
+                    : 'focus:border-primary focus:ring-primary/20'
+                }`}
+                required
+              />
+              {errors.phone && (
+                <div className="flex items-center gap-2 text-red-500 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.phone}
+                </div>
+              )}
+            </div>
+
+            {/* Github Field */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                <Github className="w-4 h-4" />
+                Github Username
+              </label>
+              <Input
+                value={github}
+                readOnly
+              />
+            </div>
+
+            {/* Role Field */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                <GraduationCap className="w-4 h-4" />
+                I am a
+              </label>
+              <Select 
+                className={`transition-all duration-200 ${
+                  errors.role 
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' 
+                    : 'focus:border-primary focus:ring-primary/20'
+                }`}
+                value={role} 
+                onChange={(e) => {
+                  setRole(e.target.value);
+                  if (errors.role) validateField('role', e.target.value);
+                }} 
+                onBlur={(e) => validateField('role', e.target.value)}
+                required
+              >
+                <option value="">Select your role</option>
+                <option value="student">Student</option>
+                <option value="professional">Professional</option>
+                <option value="exploring">Exploring</option>
+              </Select>
+              {errors.role && (
+                <div className="flex items-center gap-2 text-red-500 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.role}
+                </div>
+              )}
+            </div>
+
+            {/* Goal Field */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                Goal for this event
+              </label>
+              <div className="space-y-2">
+                {["Networking", "Learning", "Hiring Opportunities", "Just Exploring"].map((option) => (
+                  <label key={option} className="flex items-center space-x-3 cursor-pointer">
+                    <Checkbox
+                      checked={goal.includes(option)}
+                      onCheckedChange={(checked) => {
+                        const newGoal = checked ? [...goal, option] : goal.filter((g) => g !== option);
+                        setGoal(newGoal);
+                        if (errors.goal) validateField('goal', newGoal);
+                      }}
+                    />
+                    <span className="text-sm">{option}</span>
+                  </label>
+                ))}
+              </div>
+              {errors.goal && (
+                <div className="flex items-center gap-2 text-red-500 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.goal}
+                </div>
+              )}
+            </div>
+
+            {/* Attendance Field */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                Attendance
               </label>
               <div className="space-y-3">
-                {['Yes', 'No', 'Maybe'].map((option) => (
+                {["virtual", "onsite"].map((option) => (
                   <label key={option} className="flex items-center space-x-3 cursor-pointer group">
                     <input
                       type="radio"
-                      name="response"
+                      name="attendance"
                       value={option}
-                      checked={response === option}
-                      onChange={(e) => {
-                        setResponse(e.target.value);
-                        if (errors.response) validateField('response', e.target.value);
-                      }}
+                      checked={attendance === option}
+                      onChange={(e) => setAttendance(e.target.value)}
                       className="w-4 h-4 text-primary border-2 border-muted-foreground/30 focus:ring-primary/20 focus:ring-2"
                     />
                     <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                      {option}
+                      {option === "virtual" ? "Virtually" : "Onsite"}
                     </span>
                   </label>
                 ))}
               </div>
-              {errors.response && (
-                <div className="flex items-center gap-2 text-red-500 text-sm">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.response}
-                </div>
-              )}
+            </div>
+
+            {/* Comments Field */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                <MessageCircle className="w-4 h-4" />
+                Additional Comments
+              </label>
+              <Textarea
+                placeholder="Enter any additional comments"
+                value={comments}
+                onChange={(e) => setComments(e.target.value)}
+              />
             </div>
 
             {/* Submit Button */}
