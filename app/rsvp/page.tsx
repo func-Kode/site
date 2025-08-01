@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { z } from "zod";
-import { CheckCircle, AlertCircle, Loader2, Mail, User, MessageCircle, Phone, Github, GraduationCap, Target, MapPin } from "lucide-react";
+import { CheckCircle, AlertCircle, Loader2, Mail, User as UserIcon, MessageCircle, Phone, Github, GraduationCap, Target, MapPin } from "lucide-react";
 
 function showToast(message: string, type: 'success' | 'error' = 'success') {
   const existingToast = document.querySelector('[data-toast]');
@@ -59,7 +59,6 @@ export default function RSVPPage() {
   const [user, setUser] = useState<User | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [response, setResponse] = useState('');
   const [phone, setPhone] = useState('');
   const [github, setGithub] = useState('');
   const [role, setRole] = useState('');
@@ -171,8 +170,8 @@ export default function RSVPPage() {
       // Reset submitted state after 5 seconds
       setTimeout(() => setSubmitted(false), 5000);
       
-    } catch (error: any) {
-      showToast(error.message || "Failed to submit RSVP", "error");
+    } catch (error: unknown) {
+      showToast((error as Error).message || "Failed to submit RSVP", "error");
     } finally {
       setLoading(false);
     }
@@ -188,7 +187,7 @@ export default function RSVPPage() {
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-3">Thank You!</h2>
             <p className="text-muted-foreground mb-6">
-              Your RSVP has been submitted successfully. We'll be in touch soon!
+            Your RSVP has been submitted successfully. We&apos;ll be in touch soon!
             </p>
             <Button 
               onClick={() => setSubmitted(false)}
@@ -220,7 +219,7 @@ export default function RSVPPage() {
             {/* Name Field */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                <User className="w-4 h-4" />
+                <UserIcon className="w-4 h-4" />
                 Full Name
               </label>
               <Input
