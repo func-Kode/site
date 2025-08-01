@@ -5,7 +5,6 @@ import type { User } from "@supabase/supabase-js";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { 
@@ -20,7 +19,6 @@ import {
   MapPin, 
   MessageCircle,
   Search,
-  Filter,
   Download
 } from "lucide-react";
 
@@ -165,7 +163,7 @@ export default function AdminDashboard() {
           <UserX className="w-16 h-16 mx-auto mb-4 text-red-500" />
           <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
           <p className="text-muted-foreground">
-            You don't have permission to access this admin dashboard.
+            You don&apos;t have permission to access this admin dashboard.
           </p>
         </Card>
       </div>
