@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { User } from "@supabase/supabase-js";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { z } from "zod";
-import { CheckCircle, AlertCircle, Loader2, Mail, User as UserIcon, MessageCircle, Phone, Github, GraduationCap, Target, MapPin } from "lucide-react";
+import { CheckCircle, AlertCircle, Loader2, Mail, User as UserIcon, MessageCircle, Phone, Github, GraduationCap, Target, MapPin, Calendar } from "lucide-react";
+
+type Event = {
+  id: string;
+  name: string;
+  date: string;
+  time: string;
+  location: string;
+};
 
 function showToast(message: string, type: 'success' | 'error' = 'success') {
   const existingToast = document.querySelector('[data-toast]');
@@ -55,8 +64,12 @@ function showToast(message: string, type: 'success' | 'error' = 'success') {
 }
 
 
-export default function RSVPPage() {
+function RSVPPageContent() {
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get('event');
+  
   const [user, setUser] = useState<User | null>(null);
+  const [eventData, setEventData] = useState<Event | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -66,14 +79,53 @@ export default function RSVPPage() {
   const [attendance, setAttendance] = useState('virtual');
   const [comments, setComments] = useState('');
 
+  const fetchEventData = useCallback(async () => {
+    if (!eventId) return;
+    
+    try {
+      const supabase = createClientComponentClient();
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', eventId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching event:', error);
+        return;
+      }
+      
+      setEventData(data);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }, [eventId]);
+
   useEffect(() => {
     const supabase = createClientComponentClient();
+    
+    // Fetch user data
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
       setEmail(data.user?.email || "");
-      setGithub(data.user?.user_metadata?.github_username || "");
+      // Try multiple possible locations for GitHub username
+      const githubUsername = data.user?.user_metadata?.user_name || 
+                           data.user?.user_metadata?.preferred_username || 
+                           data.user?.user_metadata?.github_username ||
+                           data.user?.identities?.find(identity => identity.provider === 'github')?.identity_data?.user_name ||
+                           data.user?.app_metadata?.provider_username ||
+                           "";
+      setGithub(githubUsername);
+      console.log('User metadata:', data.user?.user_metadata);
+      console.log('GitHub username found:', githubUsername);
     });
-  }, []);
+
+    // Fetch event data if eventId is provided
+    if (eventId) {
+      fetchEventData();
+    }
+  }, [eventId, fetchEventData]);
+
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -149,7 +201,8 @@ export default function RSVPPage() {
           goals: goal, 
           attendance_type: attendance, 
           comments: comments || null,
-          user_id: user?.id || null
+          user_id: user?.id || null,
+          event_id: eventId || null
         }
       ]);
 
@@ -208,10 +261,27 @@ export default function RSVPPage() {
         <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-8 pb-6">
-            <h1 className="text-3xl font-bold text-foreground mb-2">RSVP Form</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              {eventData ? `RSVP for ${eventData.name}` : 'RSVP Form'}
+            </h1>
             <p className="text-muted-foreground">
-              Please fill out the form below to confirm your attendance.
+              {eventData 
+                ? `Please fill out the form below to confirm your attendance for ${eventData.name}.`
+                : 'Please fill out the form below to confirm your attendance.'
+              }
             </p>
+            {eventData && (
+              <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>{new Date(eventData.date).toLocaleDateString()} at {eventData.time}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <MapPin className="w-4 h-4" />
+                  <span>{eventData.location}</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Form */}
@@ -312,9 +382,16 @@ export default function RSVPPage() {
                 Github Username
               </label>
               <Input
+                placeholder="Enter your GitHub username"
                 value={github}
-                readOnly
+                onChange={(e) => setGithub(e.target.value)}
+                className="bg-muted/50 text-foreground placeholder:text-muted-foreground"
               />
+              {github && (
+                <div className="text-xs text-muted-foreground">
+                  Connected via GitHub OAuth
+                </div>
+              )}
             </div>
 
             {/* Role Field */}
@@ -444,5 +521,21 @@ export default function RSVPPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RSVPPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🎉</div>
+          <h2 className="text-2xl font-bold mb-2">Loading RSVP...</h2>
+          <p className="text-muted-foreground">Please wait while we prepare your registration form.</p>
+        </div>
+      </div>
+    }>
+      <RSVPPageContent />
+    </Suspense>
   );
 }
