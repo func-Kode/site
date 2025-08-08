@@ -6,8 +6,9 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
   const error = requestUrl.searchParams.get('error')
+  const next = requestUrl.searchParams.get('next') || '/dashboard'
 
-  console.log('Auth callback - Code:', code, 'Error:', error)
+  console.log('Auth callback - Code:', code, 'Error:', error, 'Next:', next)
 
   if (error) {
     console.error('OAuth error in callback:', error)
@@ -68,7 +69,9 @@ export async function GET(request: NextRequest) {
           isOnboarded = false
         }
 
-        const redirectPath = isOnboarded ? '/dashboard' : '/onboard'
+        // If a next param is present, prefer it after onboarding state check
+        const defaultPath = isOnboarded ? '/dashboard' : '/onboard'
+        const redirectPath = next || defaultPath
         return NextResponse.redirect(`${requestUrl.origin}${redirectPath}`)
       }
     } catch (error) {

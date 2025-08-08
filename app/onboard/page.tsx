@@ -16,66 +16,72 @@ export default function OnboardPage() {
 
   useEffect(() => {
     // Listen for auth state changes to restore session
-    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
     });
 
     const getSessionAndProfile = async () => {
-      // Use getUser for secure, authenticated user info
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
         setLoading(false);
         setSession(null);
         return;
       }
       setSession({ user } as Session);
-      // Fetch user profile from users table
+
+      type DBProfile = {
+        id: string;
+        github_username?: string | null;
+        display_name?: string | null;
+        bio?: string | null;
+        skills?: string | null;
+        role_preference?: string | null;
+        interests?: string | null;
+        avatar_url?: string | null;
+        is_onboarded?: boolean | null;
+      } | null;
+
       const { data: userProfile } = await supabase
         .from('users')
         .select('*')
         .eq('id', user.id)
-        .maybeSingle();
-      let finalProfile = userProfile;
-      // Prepare fallback/default profile
+        .maybeSingle<DBProfile>();
+
       const github_username = user.user_metadata?.user_name || user.user_metadata?.preferred_username || 'newuser';
       const avatar_url = user.user_metadata?.avatar_url || '';
       const display_name = user.user_metadata?.name || github_username || 'New User';
-      const fallbackProfile = {
+
+      const fallbackProfile: ProfileShape = {
         id: user.id,
         github_username,
         display_name,
-        bio: userProfile?.bio || '',
-        skills: userProfile?.skills || '',
-        role_preference: userProfile?.role_preference || '',
-        interests: userProfile?.interests || '',
+        bio: (userProfile?.bio as string) || '',
+        skills: (userProfile?.skills as string) || '',
+        role_preference: (userProfile?.role_preference as string) || '',
+        interests: (userProfile?.interests as string) || '',
         avatar_url,
       };
-      // If no profile, create one
+
       if (!userProfile) {
-        const { error: insertError } = await supabase.from('users').insert([fallbackProfile]);
-        if (insertError) console.error('Profile creation error:', insertError);
-        finalProfile = fallbackProfile;
+        await supabase.from('users').insert([{ ...fallbackProfile, is_onboarded: false }]);
+        setProfile(fallbackProfile);
       } else {
-        // Patch profile with defaults for missing fields
-        const { error: updateError } = await supabase
-          .from('users')
-          .update(fallbackProfile)
-          .eq('id', user.id);
-        if (updateError) console.error('Profile update error:', updateError);
-        finalProfile = { ...userProfile, ...fallbackProfile };
+        await supabase.from('users').update({ ...fallbackProfile }).eq('id', user.id);
+        setProfile({ ...fallbackProfile });
       }
-      setProfile(finalProfile);
+
       setLoading(false);
     };
     getSessionAndProfile();
     return () => {
       listener?.subscription.unsubscribe();
     };
-  }, [supabase, router]);
+  }, [supabase]);
 
   useEffect(() => {
     if (!loading && !session) {
-      router.push('/auth/login');
+      const next = encodeURIComponent('/onboard');
+      router.push(`/auth/login?redirect=${next}`);
     }
   }, [loading, session, router]);
 
@@ -105,7 +111,6 @@ export default function OnboardPage() {
     );
   }
 
-  // Only render OnboardProfileForm if profile is not null and isProfileShape(profile)
   if (loading) return <p className="text-center mt-10">Loading...</p>;
   if (!session) {
     return (
