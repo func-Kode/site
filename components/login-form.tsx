@@ -14,12 +14,16 @@ export function LoginForm() {
     const supabase = createClientComponentClient();
 
     try {
-      const redirectUrl = `${window.location.origin}/auth/callback`;
+      const origin = window.location.origin;
+      const params = new URLSearchParams(window.location.search);
+      const nextParam = params.get("redirect") || params.get("next") || "/dashboard";
+      const callback = `${origin}/auth/callback${nextParam ? `?next=${encodeURIComponent(nextParam)}` : ""}`;
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
           scopes: "read:user user:email",
-          redirectTo: redirectUrl,
+          redirectTo: callback,
         },
       });
 

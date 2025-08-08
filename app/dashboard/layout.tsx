@@ -9,17 +9,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
   } = await supabase.auth.getSession();
 
   if (!session) {
-    redirect("/auth/login");
+    redirect("/auth/login?redirect=/dashboard");
   }
 
   // Fetch user profile
   const { data: userProfile } = await supabase
     .from("users")
-    .select("onboarding_complete")
+    .select("is_onboarded")
     .eq("id", session.user.id)
-    .single();
+    .maybeSingle();
 
-  if (!userProfile?.onboarding_complete) {
+  if (!userProfile?.is_onboarded) {
     redirect("/onboard");
   }
 
