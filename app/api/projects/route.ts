@@ -1,225 +1,105 @@
 import { NextResponse } from 'next/server';
-
-export type Project = {
-  id: string;
-  title: string;
-  description: string;
-  longDescription: string;
-  image: string;
-  githubUrl: string;
-  liveUrl?: string;
-  tags: string[];
-  language: string;
-  stars: number;
-  forks: number;
-  watchers: number;
-  lastUpdated: Date;
-  author: {
-    name: string;
-    avatar: string;
-    username: string;
-  };
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
-  category: "Web App" | "Mobile App" | "CLI Tool" | "Library" | "Game" | "AI/ML";
-  featured: boolean;
-  contributors: number;
-};
-
-const projects: Project[] = [
-  {
-    id: "1",
-    title: "Code Snippet Manager",
-    description: "Organize and share your favorite code snippets with syntax highlighting and search.",
-    longDescription: "A comprehensive code snippet management tool built with Next.js and Supabase. Features include syntax highlighting, tagging, search functionality, and collaborative sharing.",
-    image: "/projects/snippet-manager.svg",
-    githubUrl: "https://github.com/funckode/snippet-manager",
-    liveUrl: "https://snippets.funckode.com",
-    tags: ["React", "Next.js", "Supabase", "TypeScript", "Tailwind"],
-    language: "TypeScript",
-    stars: 234,
-    forks: 45,
-    watchers: 12,
-    lastUpdated: new Date("2024-12-15"),
-    author: {
-      name: "Basanth Kumar",
-      avatar: "/avatars/basanth.svg",
-      username: "basanth"
-    },
-    difficulty: "Intermediate",
-    category: "Web App",
-    featured: true,
-    contributors: 8
-  },
-  {
-    id: "2",
-    title: "DevTools CLI",
-    description: "A powerful command-line interface for common development tasks and project scaffolding.",
-    longDescription: "Streamline your development workflow with this comprehensive CLI tool. Includes project templates, code generators, and automation scripts.",
-    image: "/projects/devtools-cli.svg",
-    githubUrl: "https://github.com/funckode/devtools-cli",
-    tags: ["Node.js", "CLI", "JavaScript", "Automation"],
-    language: "JavaScript",
-    stars: 156,
-    forks: 23,
-    watchers: 8,
-    lastUpdated: new Date("2024-12-10"),
-    author: {
-      name: "Sarah Chen",
-      avatar: "/avatars/sarahc.svg",
-      username: "sarahc"
-    },
-    difficulty: "Advanced",
-    category: "CLI Tool",
-    featured: true,
-    contributors: 5
-  },
-  {
-    id: "3",
-    title: "React Component Library",
-    description: "A modern, accessible React component library with TypeScript support.",
-    longDescription: "Build beautiful UIs faster with this comprehensive component library. Features dark mode, accessibility, and extensive customization options.",
-    image: "/projects/react-components.svg",
-    githubUrl: "https://github.com/funckode/react-components",
-    liveUrl: "https://components.funckode.com",
-    tags: ["React", "TypeScript", "Storybook", "CSS-in-JS"],
-    language: "TypeScript",
-    stars: 89,
-    forks: 15,
-    watchers: 6,
-    lastUpdated: new Date("2024-12-08"),
-    author: {
-      name: "Alex Rodriguez",
-      avatar: "/avatars/alexr.svg",
-      username: "alexr"
-    },
-    difficulty: "Intermediate",
-    category: "Library",
-    featured: false,
-    contributors: 12
-  },
-  {
-    id: "4",
-    title: "AI Code Assistant",
-    description: "An intelligent code completion and suggestion tool powered by machine learning.",
-    longDescription: "Enhance your coding experience with AI-powered suggestions, code completion, and intelligent refactoring recommendations.",
-    image: "/projects/ai-assistant.svg",
-    githubUrl: "https://github.com/funckode/ai-assistant",
-    tags: ["Python", "Machine Learning", "AI", "VSCode Extension"],
-    language: "Python",
-    stars: 312,
-    forks: 67,
-    watchers: 18,
-    lastUpdated: new Date("2024-12-12"),
-    author: {
-      name: "Dr. Emily Watson",
-      avatar: "/avatars/emilyw.svg",
-      username: "emilyw"
-    },
-    difficulty: "Advanced",
-    category: "AI/ML",
-    featured: true,
-    contributors: 15
-  },
-  {
-    id: "5",
-    title: "Mobile Task Manager",
-    description: "A cross-platform mobile app for task management with offline support.",
-    longDescription: "Stay organized with this feature-rich task management app. Includes offline sync, team collaboration, and smart notifications.",
-    image: "/projects/task-manager.svg",
-    githubUrl: "https://github.com/funckode/task-manager",
-    liveUrl: "https://tasks.funckode.com",
-    tags: ["React Native", "Expo", "SQLite", "Push Notifications"],
-    language: "JavaScript",
-    stars: 178,
-    forks: 34,
-    watchers: 9,
-    lastUpdated: new Date("2024-12-05"),
-    author: {
-      name: "Mike Johnson",
-      avatar: "/avatars/mikej.svg",
-      username: "mikej"
-    },
-    difficulty: "Intermediate",
-    category: "Mobile App",
-    featured: false,
-    contributors: 6
-  },
-  {
-    id: "6",
-    title: "Code Golf Challenge",
-    description: "A fun coding game where developers compete to write the shortest code solutions.",
-    longDescription: "Challenge yourself and others with programming puzzles. Features leaderboards, multiple languages, and daily challenges.",
-    image: "/projects/code-golf.svg",
-    githubUrl: "https://github.com/funckode/code-golf",
-    liveUrl: "https://golf.funckode.com",
-    tags: ["Vue.js", "Node.js", "Socket.io", "MongoDB"],
-    language: "JavaScript",
-    stars: 95,
-    forks: 19,
-    watchers: 4,
-    lastUpdated: new Date("2024-11-28"),
-    author: {
-      name: "Lisa Park",
-      avatar: "/avatars/lisap.svg",
-      username: "lisap"
-    },
-    difficulty: "Beginner",
-    category: "Game",
-    featured: false,
-    contributors: 3
-  }
-];
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const category = searchParams.get('category');
-  const difficulty = searchParams.get('difficulty');
-  const featured = searchParams.get('featured');
-  const search = searchParams.get('search');
+  try {
+    const supabase = createRouteHandlerClient({ cookies });
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category');
+    const difficulty = searchParams.get('difficulty');
+    const featured = searchParams.get('featured');
+    const search = searchParams.get('search');
 
-  let filteredProjects = [...projects];
+    let query = supabase
+      .from('projects')
+      .select('*')
+      .eq('is_approved', true)
+      .order('created_at', { ascending: false });
 
-  // Apply filters
-  if (category && category !== 'All') {
-    filteredProjects = filteredProjects.filter(project => project.category === category);
+    if (category && category !== 'All') {
+      query = query.eq('category', category);
+    }
+    if (difficulty && difficulty !== 'All') {
+      query = query.eq('difficulty', difficulty);
+    }
+    if (featured === 'true') {
+      query = query.eq('is_featured', true);
+    }
+    if (search) {
+      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.error('Database error:', error);
+      return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 });
+    }
+
+    return NextResponse.json({ projects: data ?? [], total: data?.length ?? 0, filtered: data?.length ?? 0 });
+  } catch (err) {
+    console.error('GET /api/projects error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  if (difficulty && difficulty !== 'All') {
-    filteredProjects = filteredProjects.filter(project => project.difficulty === difficulty);
-  }
-
-  if (featured === 'true') {
-    filteredProjects = filteredProjects.filter(project => project.featured);
-  }
-
-  if (search) {
-    const searchLower = search.toLowerCase();
-    filteredProjects = filteredProjects.filter(project =>
-      project.title.toLowerCase().includes(searchLower) ||
-      project.description.toLowerCase().includes(searchLower) ||
-      project.tags.some(tag => tag.toLowerCase().includes(searchLower))
-    );
-  }
-
-  // Sort by stars (popularity)
-  filteredProjects.sort((a, b) => b.stars - a.stars);
-
-  return NextResponse.json({
-    projects: filteredProjects,
-    total: projects.length,
-    filtered: filteredProjects.length
-  });
 }
 
 export async function POST(request: Request) {
-  // This would handle project submissions in a real app
-  await request.json();
-  
-  // In a real app, you'd validate the data and save to database
-  // For now, just return a success response
-  return NextResponse.json({
-    success: true,
-    message: "Project submitted successfully! It will be reviewed by our team.",
-    projectId: `temp-${Date.now()}`
-  }, { status: 201 });
+  try {
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Authentication required. Please log in to submit a project.' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const required = ['title', 'description', 'longDescription', 'githubUrl', 'language', 'authorName', 'authorEmail', 'tags'];
+    const missing = required.filter((k) => !body[k] || (Array.isArray(body[k]) && body[k].length === 0));
+    if (missing.length > 0) {
+      return NextResponse.json({ error: `Missing required fields: ${missing.join(', ')}` }, { status: 400 });
+    }
+
+    if (!String(body.githubUrl).includes('github.com')) {
+      return NextResponse.json({ error: 'Please provide a valid GitHub URL' }, { status: 400 });
+    }
+    if (body.liveUrl && !/^https?:\/\//i.test(String(body.liveUrl))) {
+      return NextResponse.json({ error: 'Please provide a valid live demo URL (must start with http or https)' }, { status: 400 });
+    }
+
+    // Map camelCase payload to snake_case DB columns
+    const payload = {
+      title: String(body.title).trim(),
+      description: String(body.description).trim(),
+      long_description: String(body.longDescription).trim(),
+      github_url: String(body.githubUrl).trim(),
+      live_url: body.liveUrl ? String(body.liveUrl).trim() : null,
+      tags: Array.isArray(body.tags) ? body.tags.map((t: unknown) => String(t).trim()).filter(Boolean) : [],
+      language: String(body.language).trim(),
+      category: String(body.category ?? 'Web App').trim(),
+      difficulty: String(body.difficulty ?? 'Intermediate').trim(),
+      author_name: String(body.authorName).trim(),
+      author_email: String(body.authorEmail).trim(),
+      user_id: user.id,
+      is_featured: false,
+      is_approved: false,
+    } as const;
+
+    const { data, error } = await supabase.from('projects').insert([payload]).select('id').single();
+    if (error) {
+      console.error('Insert error:', error);
+      return NextResponse.json({ error: 'Failed to submit project' }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Project submitted successfully! Our team will review it soon.',
+      projectId: data?.id,
+      redirectUrl: '/projects',
+    }, { status: 201 });
+  } catch (err) {
+    console.error('POST /api/projects error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

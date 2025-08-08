@@ -1,5 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { User } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +12,7 @@ import {
     Github,
     ExternalLink,
     Tag,
-    User,
+    User as UserIcon,
     Code,
     FileText,
     CheckCircle,
@@ -24,9 +27,58 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function SubmitProjectPage() {
+    const router = useRouter();
+    const supabase = createClientComponentClient();
+    const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Check authentication status
+    useEffect(() => {
+        const getUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+            setIsLoading(false);
+            
+            if (!user) {
+                // Redirect to login if not authenticated
+                router.push('/auth/login?redirect=/submit-project');
+            } else {
+                // Pre-fill author information if user is logged in
+                setFormData(prev => ({
+                    ...prev,
+                    authorName: getAuthorName(user),
+                    authorEmail: user.email || ''
+                }));
+            }
+        };
+        getUser();
+    }, [supabase.auth, router]);
+
     // Helper function to safely handle string operations
     const safeString = (value: unknown): string => {
         return typeof value === 'string' ? value : '';
+    };
+
+    // Helper function to get display name for author
+    const getAuthorName = (user: User) => {
+        // Try to get GitHub username from user_metadata
+        const githubUsername = user.user_metadata?.user_name || user.user_metadata?.preferred_username;
+        if (githubUsername) {
+            return githubUsername;
+        }
+        
+        // Try to get full name
+        const fullName = user.user_metadata?.full_name || user.user_metadata?.name;
+        if (fullName) {
+            return fullName;
+        }
+        
+        // Fallback to email username (part before @)
+        if (user.email) {
+            return user.email.split('@')[0];
+        }
+        
+        return 'User';
     };
 
     const [formData, setFormData] = useState({
@@ -57,6 +109,13 @@ export default function SubmitProjectPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Check if user is still authenticated
+        if (!user) {
+            router.push('/auth/login?redirect=/submit-project');
+            return;
+        }
+
         setIsSubmitting(true);
         setSubmitStatus('idle');
 
@@ -81,14 +140,19 @@ export default function SubmitProjectPage() {
                 throw new Error('At least one tag is required');
             }
 
+            // Get authentication token
+            const { data: { session } } = await supabase.auth.getSession();
+            
             const response = await fetch('/api/projects', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token}`
                 },
                 body: JSON.stringify({
                     ...formData,
-                    tags: processedTags
+                    tags: processedTags,
+                    userId: user.id
                 }),
             });
 
@@ -105,9 +169,14 @@ export default function SubmitProjectPage() {
                     language: "",
                     category: "Web App",
                     difficulty: "Intermediate",
-                    authorName: "",
-                    authorEmail: ""
+                    authorName: getAuthorName(user),
+                    authorEmail: user.email || ''
                 });
+                
+                // Redirect to projects page after successful submission
+                setTimeout(() => {
+                    router.push('/projects');
+                }, 3000);
             } else {
                 const errorData = await response.json().catch(() => ({}));
                 console.error('Submission failed:', errorData);
@@ -122,6 +191,27 @@ export default function SubmitProjectPage() {
             setIsSubmitting(false);
         }
     };
+
+    // Show loading while checking authentication
+    if (isLoading) {
+        return (
+            <div className="bg-gradient-to-br from-background to-muted/20">
+                <div className="container mx-auto container-mobile py-8 md:py-12 max-w-4xl safe-bottom">
+                    <div className="flex items-center justify-center min-h-[50vh]">
+                        <div className="text-center">
+                            <div className="w-8 h-8 border-2 border-brand-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-muted-foreground">Checking authentication...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Don't render the form if user is not authenticated (will redirect)
+    if (!user) {
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
@@ -152,6 +242,7 @@ export default function SubmitProjectPage() {
                                     <h3 className="font-semibold text-green-800 dark:text-green-200">Project Submitted Successfully!</h3>
                                     <p className="text-green-700 dark:text-green-300">
                                         Thank you for sharing your project. Our team will review it and add it to the showcase soon.
+                                        You will be redirected to the projects page in a few seconds.
                                     </p>
                                 </div>
                             </div>
@@ -356,7 +447,7 @@ export default function SubmitProjectPage() {
                             {/* Author Information */}
                             <div className="border-t pt-6">
                                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                    <User className="w-5 h-5" />
+                                    <UserIcon className="w-5 h-5" />
                                     Author Information
                                 </h3>
                                 <div className="grid md:grid-cols-2 gap-6">

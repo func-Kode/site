@@ -3,7 +3,7 @@
 Welcome to the official website of [func(Kode)](https://func-kode.netlify.app/) — a community-first initiative built by developers, for developers.  
 This project is the central platform for onboarding, collaboration, and real-time contribution tracking within the **func(Kode)** GitHub organization.
 
-<img width="250" height="250" alt="Copilot_20250701_193201" src="https://github.com/user-attachments/assets/8f3c155a-3722-45a7-a86e-3894d83922e4" />
+![Copilot_20250701_193201](https://github.com/user-attachments/assets/8f3c155a-3722-45a7-a86e-3894d83922e4)
 
 ---
 

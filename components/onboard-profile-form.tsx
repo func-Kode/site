@@ -51,7 +51,7 @@ export default function OnboardProfileForm({
       skills: form.skills,
       role_preference: form.role_preference,
       interests: form.interests,
-      onboarding_complete: true,
+      is_onboarded: true,
     }).eq("id", form.id);
     setLoading(false);
     if (error) {

@@ -234,7 +234,7 @@ export default function ProjectsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="bg-gradient-to-br from-background to-muted/20">
       <div className="container mx-auto container-mobile py-8 md:py-12 safe-bottom">
         {/* Header */}
         <div className="text-center mb-12 md:mb-16">

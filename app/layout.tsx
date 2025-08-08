@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 import { Providers } from "@/components/providers";
 import { DebugConsoleProvider } from "@/components/debug-console-provider";
 
@@ -68,8 +69,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={inter.className}>
         <Providers>
           <DebugConsoleProvider enabled={isDebugEnabled}>
-            <Navbar />
-            {children}
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </div>
           </DebugConsoleProvider>
         </Providers>
       </body>

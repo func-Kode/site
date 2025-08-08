@@ -1,49 +1,24 @@
 import { NextResponse } from 'next/server';
-
-// Import the projects data (in a real app, this would come from a database)
-const projects = [
-  {
-    id: "1",
-    title: "Code Snippet Manager",
-    description: "Organize and share your favorite code snippets with syntax highlighting and search.",
-    longDescription: "A comprehensive code snippet management tool built with Next.js and Supabase. Features include syntax highlighting, tagging, search functionality, and collaborative sharing.",
-    image: "/projects/snippet-manager.svg",
-    githubUrl: "https://github.com/funckode/snippet-manager",
-    liveUrl: "https://snippets.funckode.com",
-    tags: ["React", "Next.js", "Supabase", "TypeScript", "Tailwind"],
-    language: "TypeScript",
-    stars: 234,
-    forks: 45,
-    watchers: 12,
-    lastUpdated: new Date("2024-12-15"),
-    author: {
-      name: "Basanth Kumar",
-      avatar: "/avatars/basanth.svg",
-      username: "basanth"
-    },
-    difficulty: "Intermediate",
-    category: "Web App",
-    featured: true,
-    contributors: 8
-  }
-  // ... other projects would be here in a real app
-];
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  const project = projects.find(p => p.id === id);
+  const supabase = createRouteHandlerClient({ cookies });
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', id)
+    .single();
 
-  if (!project) {
-    return NextResponse.json(
-      { error: 'Project not found' },
-      { status: 404 }
-    );
+  if (error || !data) {
+    return NextResponse.json({ error: 'Project not found' }, { status: 404 });
   }
 
-  return NextResponse.json(project);
+  return NextResponse.json(data);
 }
 
 export async function PUT(
@@ -51,15 +26,19 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  // This would handle project updates in a real app
-  await request.json();
-  
-  // In a real app, you'd validate the data and update in database
-  return NextResponse.json({
-    success: true,
-    message: "Project updated successfully!",
-    projectId: id
-  });
+  const supabase = createRouteHandlerClient({ cookies });
+  const updates = await request.json();
+
+  // Only allow admins or owner to update (RLS should enforce this server-side)
+  const { error } = await supabase
+    .from('projects')
+    .update(updates)
+    .eq('id', id);
+
+  if (error) {
+    return NextResponse.json({ error: 'Failed to update project' }, { status: 400 });
+  }
+  return NextResponse.json({ success: true, message: 'Project updated successfully', projectId: id });
 }
 
 export async function DELETE(
@@ -67,10 +46,14 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  // This would handle project deletion in a real app
-  return NextResponse.json({
-    success: true,
-    message: "Project deleted successfully!",
-    projectId: id
-  });
+  const supabase = createRouteHandlerClient({ cookies });
+  const { error } = await supabase
+    .from('projects')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return NextResponse.json({ error: 'Failed to delete project' }, { status: 400 });
+  }
+  return NextResponse.json({ success: true, message: 'Project deleted successfully', projectId: id });
 }

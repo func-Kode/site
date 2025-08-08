@@ -95,7 +95,7 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="bg-gradient-to-br from-background to-muted/20">
       <div className="container mx-auto px-4 py-12 max-w-6xl">
         {/* Hero Section */}
         <header className="text-center mb-16 animate-fade-in">

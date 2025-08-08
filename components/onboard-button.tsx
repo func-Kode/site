@@ -1,7 +1,53 @@
+"use client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import type { User } from "@supabase/supabase-js";
 
 export function OnboardButton() {
+  const [user, setUser] = useState<User | null>(null);
+  const [isOnboarded, setIsOnboarded] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+        
+        if (!user) {
+          setLoading(false);
+          return;
+        }
+
+        // Check if user has completed onboarding by looking for their profile
+        const { data: userProfile } = await supabase
+          .from('users')
+          .select('is_onboarded')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        // Consider onboarding complete if user has is_onboarded flag set to true
+        if (userProfile?.is_onboarded) {
+          setIsOnboarded(true);
+        }
+      } catch (error) {
+        console.error('Error checking onboarding status:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkOnboardingStatus();
+  }, [supabase]);
+
+  // Don't render the button if user is not logged in, loading, or already onboarded
+  if (!user || loading || isOnboarded) {
+    return null;
+  }
+
   return (
     <Button
       asChild
@@ -14,7 +60,7 @@ export function OnboardButton() {
         <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="inline-block">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
         </svg>
-        Onboard
+        Complete Profile
       </Link>
     </Button>
   );
