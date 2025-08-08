@@ -62,6 +62,28 @@ export default function DashboardPage() {
 	const [loadingActivities, setLoadingActivities] = useState(true);
 	const [eventTypeFilter, setEventTypeFilter] = useState<string>("all");
 
+	// Helper function to get display name
+	const getDisplayName = (user: User) => {
+		// Try to get GitHub username from user_metadata
+		const githubUsername = user.user_metadata?.user_name || user.user_metadata?.preferred_username;
+		if (githubUsername) {
+			return `@${githubUsername}`;
+		}
+		
+		// Try to get full name
+		const fullName = user.user_metadata?.full_name || user.user_metadata?.name;
+		if (fullName) {
+			return fullName;
+		}
+		
+		// Fallback to email username (part before @)
+		if (user.email) {
+			return user.email.split('@')[0];
+		}
+		
+		return 'User';
+	};
+
 	useEffect(() => {
 		const supabase = createClientComponentClient();
 		supabase.auth.getUser().then(async ({ data }) => {
@@ -275,7 +297,7 @@ export default function DashboardPage() {
 				</h1>
 				{user && (
 					<p className="text-brand-green text-center">
-						Signed in as <span className="font-semibold">{user.email}</span>
+						Signed in as <span className="font-semibold">{getDisplayName(user)}</span>
 					</p>
 				)}
 				<p className="text-gray-500 text-center max-w-xl mt-2">

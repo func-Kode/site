@@ -8,7 +8,8 @@ export default function Page() {
         <span className="inline-block animate-bounce">
           <Image src="/raccoon.png" alt="Raccoon Mascot" width={48} height={48} />
         </span>
-        <h1 className="text-2xl font-bold text-brand-blue text-center">Join func(Kode)!</h1>
+        <h1 className="text-2xl font-bold text-brand-blue text-center">Sign in with GitHub</h1>
+        <p className="text-sm text-muted-foreground text-center -mt-2">No passwords. Just your GitHub account.</p>
         <div className="w-full">
           <SignUpForm />
         </div>

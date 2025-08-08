@@ -9,78 +9,89 @@
 // import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 
 export default function HomePage() {
 
-  // Example tip of the day
+  // Comprehensive collection of developer tips
   const tips = [
-    "Use meaningful variable names for better code readability.",
-    "Break down large functions into smaller, reusable components.",
-    "Comment your code where necessary, but let the code speak for itself.",
+    // Motivation & Growth
+    "🚀 Every expert was once a beginner. Your journey matters more than your destination.",
+    "💪 The best time to plant a tree was 20 years ago. The second best time is now - start coding!",
+    "🌟 Your code doesn't have to be perfect, it just has to be better than yesterday.",
+    "🎯 Focus on progress, not perfection. Small daily improvements lead to stunning results.",
+    "🔥 Debugging is like being a detective in a crime movie where you're also the murderer.",
+    "✨ Code is poetry written in logic. Make yours beautiful and meaningful.",
+    
+    // Best Practices
+    "📝 Use meaningful variable names for better code readability - future you will thank you.",
+    "🧩 Break down large functions into smaller, reusable components for maintainability.",
+    "💬 Comment your code where necessary, but let clean code speak for itself.",
+    "🔄 Refactor mercilessly. Good code is not written, it's rewritten.",
+    "🎨 Consistent code style matters more than the specific style you choose.",
+    "⚡ Premature optimization is the root of all evil - make it work first, then make it fast.",
+    
+    // Git & Collaboration
+    "📚 Write commit messages like you're telling a story to your future self.",
+    "🌿 Create feature branches for every change - keep your main branch clean and deployable.",
+    "🔍 Code reviews are not about finding faults, they're about sharing knowledge.",
+    "🤝 The best code is written by teams, not individuals. Collaborate fearlessly.",
+    "📖 Good documentation is love letter to your future self and your teammates.",
+    
+    // Problem Solving
+    "🧠 When stuck, explain your problem to a rubber duck - or better yet, to a teammate.",
+    "🔍 Google is a developer's best friend, but understanding the results is your superpower.",
+    "💡 If you can't solve a problem, break it into smaller problems you can solve.",
+    "🎪 Stack Overflow is not cheating - it's collaborative learning at its finest.",
+    "🚪 Sometimes the best solution is to step away from the keyboard and take a walk.",
+    
+    // Open Source & Community
+    "🌍 Open source is not just about code - it's about building communities and sharing knowledge.",
+    "🎁 Your first contribution doesn't have to be code - documentation and bug reports are valuable too.",
+    "🏆 Contributing to open source is like going to the gym - it's hard at first, but incredibly rewarding.",
+    "🤲 The best way to learn is to teach. Share your knowledge through blogs, talks, or mentoring.",
+    "🌱 Every expert was once confused by Git. Don't be afraid to make mistakes and learn.",
+    
+    // Productivity & Habits
+    "⏰ Consistency beats intensity. Code a little every day rather than cramming on weekends.",
+    "🎯 Set small, achievable goals. Finishing a feature feels better than starting ten.",
+    "🧘 Take breaks. Your best ideas often come when you're not actively trying to solve the problem.",
+    "📱 Turn off notifications when coding. Deep work requires uninterrupted focus.",
+    "🌙 Sleep is not optional. Well-rested developers write better code and fewer bugs.",
+    
+    // Learning & Skills
+    "📚 Read other people's code. It's like having a conversation with developers across time and space.",
+    "🔧 Learn your tools deeply. Mastering your IDE can save hours every week.",
+    "🎸 Programming languages are tools, not religions. Choose the right tool for the job.",
+    "🧪 Test your code, or your users will test it for you - and they're not as nice about it.",
+    "🎨 Design patterns are solutions to common problems. Learn them, but don't overuse them.",
+    
+    // Career & Growth
+    "📈 Your GitHub profile is your portfolio. Make it shine with quality contributions.",
+    "🎤 Practice explaining technical concepts in simple terms - it shows true understanding.",
+    "🌐 Build things that solve real problems, even if they're small problems.",
+    "💼 Side projects are playgrounds for trying new technologies without work constraints.",
+    "🎓 Impostor syndrome is real, but so is your growth. You belong in this field.",
+    
+    // func(Kode) Specific
+    "🦝 Welcome to func(Kode)! Every raccoon started as a beginner - let's grow together.",
+    "🏅 Check your dashboard regularly to track your open source journey and celebrate wins.",
+    "🎯 The leaderboard isn't about competition - it's about motivation and community recognition.",
+    "🔥 Your func(Kode) streak shows consistency. Small daily contributions build lasting habits.",
+    "🌟 Every issue you solve, every PR you review, makes the open source world a little better."
   ];
+
   const [tipIndex, setTipIndex] = useState(0);
 
-  // Event announcement & countdown
-  const eventName = "Ship in an hour (#1)";
-  // Event starts at 1:30 PM and ends at 5:30 PM on August 2, 2025
-  const eventStartDate = useMemo(() => new Date(2025, 7, 2, 13, 30, 0), []); // August 2, 2025, 1:30 PM
-  const eventEndDate = useMemo(() => new Date(2025, 7, 2, 17, 30, 0), []); // August 2, 2025, 5:30 PM
-  // ...existing code...
-  const [timeLeft, setTimeLeft] = useState<string>("");
-
   useEffect(() => {
-    const updateCountdown = () => {
-      const now = new Date();
-      if (now >= eventEndDate) {
-        setTimeLeft("Event has ended.");
-        return;
-      }
-      if (now >= eventStartDate && now < eventEndDate) {
-        setTimeLeft("Event is live!");
-        return;
-      }
-      const diff = eventStartDate.getTime() - now.getTime();
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diff / (1000 * 60)) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
-      setTimeLeft(
-        `${days}d ${hours}h ${minutes}m ${seconds}s`
-      );
-    };
-    updateCountdown();
-    const timer = setInterval(updateCountdown, 1000);
-    return () => clearInterval(timer);
-  }, [eventStartDate, eventEndDate]);
+    // Generate initial random tip
+    const initialIndex = Math.floor(Math.random() * tips.length);
+    setTipIndex(initialIndex);
+  }, [tips.length]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <main className="bg-gradient-to-br from-background via-background to-muted/20">
       <div className="container mx-auto container-mobile py-8 md:py-12 safe-bottom">
-        {/* Announcement Banner */}
-        <div className="w-full max-w-4xl mx-auto mb-8 md:mb-12">
-          <div className="bg-gradient-to-r from-brand-blue via-brand-green to-primary text-white rounded-2xl shadow-2xl p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row items-center justify-between gap-4 md:gap-6 animate-fade-in animate-gradient card-hover">
-            <div className="flex-1 text-center lg:text-left">
-              <h2 className="text-responsive-xl font-bold mb-2">🚀 Upcoming Event: {eventName}</h2>
-              <p className="text-responsive-base opacity-90">
-                Starts <span className="font-semibold">August 2, 2025, 1:30 PM</span> – Ends <span className="font-semibold">5:30 PM</span>
-              </p>
-            </div>
-            <div className="flex flex-col items-center bg-black/20 rounded-xl p-4 backdrop-blur-sm">
-              <span className="text-xs font-mono uppercase tracking-wider mb-2 opacity-80">Countdown</span>
-              <span className="text-2xl md:text-3xl font-bold font-mono px-4 py-2 rounded-lg bg-white/10 shadow-inner" aria-live="polite">
-                {timeLeft}
-              </span>
-              <Link
-                href="/events"
-                className="mt-4 px-6 py-3 bg-white text-brand-blue font-semibold rounded-full shadow-lg hover:shadow-xl touch-target button-press transition-all duration-200"
-              >
-                Event Details
-              </Link>
-            </div>
-          </div>
-        </div>
-
         {/* Hero Section */}
         <section className="w-full max-w-4xl mx-auto flex flex-col items-center text-center gap-6 md:gap-8 animate-scale-in">
           {/* Logo & Tagline */}
@@ -143,29 +154,39 @@ export default function HomePage() {
 
         {/* Features Grid */}
         <section className="w-full max-w-6xl mx-auto mt-12 md:mt-20 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          <div className="text-center p-6 md:p-8 bg-card rounded-2xl shadow-lg card-hover animate-slide-in-left">
+          <Link 
+            href="/docs"
+            className="text-center p-6 md:p-8 bg-card rounded-2xl shadow-lg card-hover animate-slide-in-left cursor-pointer hover:scale-105 transition-transform duration-200 block"
+          >
             <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-brand-blue to-primary rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6">
               <span className="text-2xl md:text-3xl">🚀</span>
             </div>
             <h3 className="text-lg md:text-xl font-semibold mb-3 text-foreground">Build Together</h3>
             <p className="text-sm md:text-base text-muted-foreground leading-relaxed">Collaborate on open-source projects and showcase your work to the community.</p>
-          </div>
+          </Link>
           
-          <div className="text-center p-6 md:p-8 bg-card rounded-2xl shadow-lg card-hover animate-scale-in sm:col-span-2 lg:col-span-1" style={{animationDelay: '0.2s'}}>
+          <Link 
+            href="/learn"
+            className="text-center p-6 md:p-8 bg-card rounded-2xl shadow-lg card-hover animate-scale-in sm:col-span-2 lg:col-span-1 cursor-pointer hover:scale-105 transition-transform duration-200 block"
+            style={{animationDelay: '0.2s'}}
+          >
             <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-brand-green to-brand-green/80 rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6">
               <span className="text-2xl md:text-3xl">📚</span>
             </div>
             <h3 className="text-lg md:text-xl font-semibold mb-3 text-foreground">Learn & Grow</h3>
             <p className="text-sm md:text-base text-muted-foreground leading-relaxed">Access tutorials, tips, and resources to level up your coding skills.</p>
-          </div>
+          </Link>
           
-          <div className="text-center p-6 md:p-8 bg-card rounded-2xl shadow-lg card-hover animate-slide-in-right sm:col-start-2 lg:col-start-auto">
+          <Link 
+            href="/events"
+            className="text-center p-6 md:p-8 bg-card rounded-2xl shadow-lg card-hover animate-slide-in-right sm:col-start-2 lg:col-start-auto cursor-pointer hover:scale-105 transition-transform duration-200 block"
+          >
             <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-primary to-brand-blue rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6">
               <span className="text-2xl md:text-3xl">🌟</span>
             </div>
             <h3 className="text-lg md:text-xl font-semibold mb-3 text-foreground">Connect & Share</h3>
             <p className="text-sm md:text-base text-muted-foreground leading-relaxed">Join events, meetups, and connect with fellow developers worldwide.</p>
-          </div>
+          </Link>
         </section>
 
         {/* Tip of the Day */}
@@ -180,7 +201,14 @@ export default function HomePage() {
             </p>
             <button
               className="mt-4 px-6 py-3 bg-gradient-to-r from-brand-green to-brand-green/80 text-white rounded-full font-medium hover:shadow-lg touch-target button-press transition-all duration-200"
-              onClick={() => setTipIndex((tipIndex + 1) % tips.length)}
+              onClick={() => {
+                // Generate a random index that's different from the current one
+                let newIndex;
+                do {
+                  newIndex = Math.floor(Math.random() * tips.length);
+                } while (newIndex === tipIndex && tips.length > 1);
+                setTipIndex(newIndex);
+              }}
               aria-label="Next tip"
             >
               Next Tip

@@ -159,3 +159,217 @@ INSERT INTO events (
     true,
     true
 ) ON CONFLICT (id) DO NOTHING;
+
+-- Create the projects table
+CREATE TABLE IF NOT EXISTS projects (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    long_description TEXT NOT NULL,
+    github_url TEXT NOT NULL,
+    live_url TEXT,
+    tags TEXT[] NOT NULL DEFAULT '{}',
+    language TEXT NOT NULL,
+    category TEXT NOT NULL CHECK (category IN ('Web App', 'Mobile App', 'CLI Tool', 'Library', 'Game', 'AI/ML')),
+    difficulty TEXT NOT NULL CHECK (difficulty IN ('Beginner', 'Intermediate', 'Advanced')),
+    author_name TEXT NOT NULL,
+    author_email TEXT NOT NULL,
+    user_id UUID REFERENCES auth.users(id),
+    is_featured BOOLEAN DEFAULT false,
+    is_approved BOOLEAN DEFAULT false,
+    views_count INTEGER DEFAULT 0,
+    likes_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS for projects
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+
+-- Allow everyone to read approved projects
+CREATE POLICY "Anyone can view approved projects"
+ON projects FOR SELECT
+USING (is_approved = true);
+
+-- Allow users to insert their own projects
+CREATE POLICY "Users can insert their own projects"
+ON projects FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+-- Allow users to view their own projects (even if not approved)
+CREATE POLICY "Users can view their own projects"
+ON projects FOR SELECT
+TO authenticated
+USING (auth.uid() = user_id);
+
+-- Allow users to update their own projects
+CREATE POLICY "Users can update their own projects"
+ON projects FOR UPDATE
+TO authenticated
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Allow admins to manage all projects
+CREATE POLICY "Admins can manage all projects"
+ON projects FOR ALL
+TO authenticated
+USING (
+    auth.jwt() ->> 'email' IN ('vvs.pedapati@rediffmail.com') OR
+    auth.jwt() -> 'user_metadata' ->> 'github_username' = 'basanth-pedapati'
+)
+WITH CHECK (
+    auth.jwt() ->> 'email' IN ('vvs.pedapati@rediffmail.com') OR
+    auth.jwt() -> 'user_metadata' ->> 'github_username' = 'basanth-pedapati'
+);
+
+-- Create indexes for projects
+CREATE INDEX IF NOT EXISTS idx_projects_created_at ON projects(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_projects_category ON projects(category);
+CREATE INDEX IF NOT EXISTS idx_projects_difficulty ON projects(difficulty);
+CREATE INDEX IF NOT EXISTS idx_projects_language ON projects(language);
+CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);
+CREATE INDEX IF NOT EXISTS idx_projects_is_approved ON projects(is_approved);
+CREATE INDEX IF NOT EXISTS idx_projects_is_featured ON projects(is_featured);
+CREATE INDEX IF NOT EXISTS idx_projects_views_count ON projects(views_count DESC);
+CREATE INDEX IF NOT EXISTS idx_projects_likes_count ON projects(likes_count DESC);
+
+-- Create trigger for projects updated_at
+CREATE TRIGGER update_projects_updated_at
+    BEFORE UPDATE ON projects
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Create the projects table
+CREATE TABLE IF NOT EXISTS projects (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    tech_stack TEXT[] NOT NULL DEFAULT '{}',
+    github_url TEXT NOT NULL,
+    live_url TEXT,
+    category TEXT NOT NULL CHECK (category IN (
+        'Web Development', 'Mobile Development', 'AI/ML', 'Data Science', 
+        'DevOps', 'Blockchain', 'Game Development', 'Desktop Applications', 
+        'API/Backend', 'CLI Tools'
+    )),
+    difficulty TEXT NOT NULL CHECK (difficulty IN ('Beginner', 'Intermediate', 'Advanced')),
+    tags TEXT[] NOT NULL DEFAULT '{}',
+    author_name TEXT NOT NULL,
+    author_email TEXT NOT NULL,
+    featured BOOLEAN DEFAULT false,
+    approved BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS for projects
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+
+-- Allow everyone to read approved projects
+CREATE POLICY "Anyone can view approved projects"
+ON projects FOR SELECT
+USING (approved = true);
+
+-- Allow users to insert their own projects
+CREATE POLICY "Users can insert their own projects"
+ON projects FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+-- Allow users to update their own projects
+CREATE POLICY "Users can update their own projects"
+ON projects FOR UPDATE
+TO authenticated
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Allow users to view their own projects
+CREATE POLICY "Users can view their own projects"
+ON projects FOR SELECT
+TO authenticated
+USING (auth.uid() = user_id);
+
+-- Allow admins to manage all projects
+CREATE POLICY "Admins can manage all projects"
+ON projects FOR ALL
+TO authenticated
+USING (
+    auth.jwt() ->> 'email' IN ('vvs.pedapati@rediffmail.com') OR
+    auth.jwt() -> 'user_metadata' ->> 'github_username' = 'basanth-pedapati'
+)
+WITH CHECK (
+    auth.jwt() ->> 'email' IN ('vvs.pedapati@rediffmail.com') OR
+    auth.jwt() -> 'user_metadata' ->> 'github_username' = 'basanth-pedapati'
+);
+
+-- Create indexes for projects
+CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);
+CREATE INDEX IF NOT EXISTS idx_projects_created_at ON projects(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_projects_category ON projects(category);
+CREATE INDEX IF NOT EXISTS idx_projects_difficulty ON projects(difficulty);
+CREATE INDEX IF NOT EXISTS idx_projects_approved ON projects(approved);
+CREATE INDEX IF NOT EXISTS idx_projects_featured ON projects(featured);
+
+-- Create trigger for projects updated_at
+CREATE TRIGGER update_projects_updated_at
+    BEFORE UPDATE ON projects
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Create the users table for user profiles
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    github_username TEXT,
+    display_name TEXT,
+    bio TEXT,
+    skills TEXT,
+    role_preference TEXT,
+    interests TEXT,
+    avatar_url TEXT,
+    github_access_token TEXT,
+    is_onboarded BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS for users
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+-- Allow users to read and update their own profile
+CREATE POLICY "Users can view their own profile"
+ON users FOR SELECT
+TO authenticated
+USING (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile"
+ON users FOR UPDATE
+TO authenticated
+USING (auth.uid() = id)
+WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Users can insert their own profile"
+ON users FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = id);
+
+-- Allow admins to view all profiles
+CREATE POLICY "Admins can view all profiles"
+ON users FOR SELECT
+TO authenticated
+USING (
+    auth.jwt() ->> 'email' IN ('vvs.pedapati@rediffmail.com') OR
+    auth.jwt() -> 'user_metadata' ->> 'github_username' = 'basanth-pedapati'
+);
+
+-- Create indexes for users
+CREATE INDEX IF NOT EXISTS idx_users_github_username ON users(github_username);
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_users_is_onboarded ON users(is_onboarded);
+
+-- Create trigger for users updated_at
+CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
