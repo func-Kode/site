@@ -1,5 +1,5 @@
 "use client";
-
+import Script from "next/script";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,10 +16,9 @@ export default function AboutPage() {
   const supabase = createClientComponentClient();
 
   useEffect(() => {
-    // Check current user authentication status
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      setUser(user as unknown as object | null);
     };
     getUser();
   }, [supabase.auth]);
@@ -52,6 +51,20 @@ export default function AboutPage() {
 
   return (
     <div className="bg-gradient-to-br from-background to-muted/20">
+      {/* Structured Data */}
+      <Script id="ld-org" type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'funcKode',
+          url: process.env.NEXT_PUBLIC_SITE_URL || 'https://func-kode.netlify.app',
+          sameAs: ['https://github.com/func-Kode'],
+          founder: {
+            '@type': 'Person',
+            name: 'VVS Basanth Pedapati',
+          },
+        })}
+      </Script>
       <div className="container mx-auto container-mobile py-8 md:py-12 max-w-6xl safe-bottom">
         {/* Hero Section with Founder Info */}
         <div className="text-center mb-12 md:mb-16">

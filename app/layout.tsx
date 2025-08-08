@@ -6,21 +6,35 @@ import { Footer } from "@/components/footer";
 import { Providers } from "@/components/providers";
 import { DebugConsoleProvider } from "@/components/debug-console-provider";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
 export const metadata: Metadata = {
-  metadataBase: new URL(defaultUrl),
+  metadataBase: new URL(siteUrl),
   title: "funcKode | A developers' community",
   description: "funcKode is a modern web development platform for building scalable, fast, and secure web applications.",
-  keywords: ["funcKode", "web development", "next.js", "supabase", "react", "tailwind", "modern", "scalable", "secure"],
+  keywords: [
+    "funcKode",
+    "web development",
+    "next.js",
+    "supabase",
+    "react",
+    "tailwind",
+    "modern",
+    "scalable",
+    "secure",
+    "github",
+    "developer",
+    "software engineer",
+    "developer resume",
+    "portfolio",
+  ],
   authors: [{ name: "funcKode Team" }],
   openGraph: {
     title: "funcKode | Modern Web Development Platform",
     description: "Build scalable, fast, and secure web applications with funcKode.",
     images: ["/opengraph-image.png"],
-    url: "https://func-kode.netlify.app",
+    url: siteUrl,
     type: "website",
   },
   twitter: {

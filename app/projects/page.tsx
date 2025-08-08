@@ -20,6 +20,7 @@ import {
   Clock,
   Award
 } from "lucide-react";
+import Script from "next/script";
 
 type Project = {
   id: string;
@@ -235,6 +236,14 @@ export default function ProjectsPage() {
 
   return (
     <div className="bg-gradient-to-br from-background to-muted/20">
+      <Script id="ld-projects" type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: 'Open‑Source Projects – funcKode',
+          url: (process.env.NEXT_PUBLIC_SITE_URL || 'https://func-kode.netlify.app') + '/projects',
+        })}
+      </Script>
       <div className="container mx-auto container-mobile py-8 md:py-12 safe-bottom">
         {/* Header */}
         <div className="text-center mb-12 md:mb-16">
