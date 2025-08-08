@@ -7,18 +7,12 @@ export function LoginForm() {
   const handleGithubLogin = async () => {
     const supabase = createClientComponentClient();
     
-    // Use the current origin to build the callback URL
-    const redirectURL = `${window.location.origin}/auth/callback`
-    
-    console.log("Current origin:", window.location.origin);
-    console.log("Redirect URL:", redirectURL);
-    
     const { data, error } = await
     supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
         scopes: "read:user user:email repo read:discussion",
-        redirectTo: redirectURL,
+        redirectTo: "https://func-kode.netlify.app/dashboard",
       },
     });
 
