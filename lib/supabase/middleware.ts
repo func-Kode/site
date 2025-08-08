@@ -38,17 +38,29 @@ export const createClient = (request: NextRequest) => {
 
 // Add updateSession export for middleware usage
 export async function updateSession(request: NextRequest) {
-  createServerClient(supabaseUrl!, supabaseKey!, {
+  let supabaseResponse = NextResponse.next({
+    request,
+  });
+
+  const supabase = createServerClient(supabaseUrl!, supabaseKey!, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        supabaseResponse = NextResponse.next({
+          request,
+        });
+        cookiesToSet.forEach(({ name, value }) =>
+          supabaseResponse.cookies.set(name, value)
+        );
       },
     },
   });
-  // Optionally refresh session or perform logic here
-  // For now, just return NextResponse.next()
-  return NextResponse.next();
+
+  // Refresh the session to ensure it's valid
+  await supabase.auth.getSession();
+
+  return supabaseResponse;
 }

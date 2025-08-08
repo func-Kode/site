@@ -25,18 +25,28 @@ git checkout dev
 git checkout -b feat/your-feature-name
 npm install
 ```
-### 2. Add a `.en.local` file
-```bash
-NEXT_PUBLIC_SUPABASE_URL=your-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-```
+
+### 2. Set Up Your Development Environment
+
+**Important**: Set up your own GitHub OAuth app and Supabase project for secure development.
+
+📖 **[Follow the Complete Development Setup Guide](./docs/DEVELOPMENT_SETUP.md)**
+
+This includes:
+
+- Creating your own GitHub OAuth app
+- Setting up a personal Supabase project
+- Configuring environment variables
+- Database schema setup
 
 ### 3. Run the App
+
 ```bash
 npm run dev
 ```
 
 ### 4. Project Structure
+
 ```bash
 /app           → App Router (Next.js 14)
 /components    → Reusable UI components
@@ -44,7 +54,8 @@ npm run dev
 /api           → GitHub Webhook endpoint
 ```
 
-### 5. What you can work on...
+### 5. What you can work on
+
 You can contribute to:
 
 🐛 Bug fixes

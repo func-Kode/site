@@ -44,12 +44,31 @@ To create a hub where developers can sign in, contribute meaningfully, and grow 
 
 ## 🛠️ Local Development
 
+### For Contributors
+
+**Important**: Contributors should set up their own development environment with personal GitHub OAuth app and Supabase project for security and isolation.
+
+📖 **[Complete Development Setup Guide](./docs/DEVELOPMENT_SETUP.md)**
+
+### Quick Start
+
 ```bash
 git clone https://github.com/func-kode/site.git
 cd site
 npm install
 
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-
+# Follow the development setup guide to create your .env.local
 npm run dev
+```
+
+### Environment Setup
+
+Create a `.env.local` file with your personal development credentials:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your-personal-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-personal-anon-key
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+> **Note**: The production environment uses separate OAuth apps and Supabase project for security.
