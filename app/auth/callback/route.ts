@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -13,18 +13,41 @@ export async function GET(request: NextRequest) {
   }
 
   if (!code) {
-    // In case the middleware forwarded params differently (e.g., code in search), just go login
     return NextResponse.redirect(`${requestUrl.origin}/auth/login`)
   }
 
-  const cookieStore = cookies()
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      },
+    }
+  )
 
   try {
     const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
     if (exchangeError || !data?.session) {
+      console.error('Code exchange failed:', exchangeError)
       return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=exchange_failed`)
     }
+
+    console.log('Session created successfully:', data.session.user.id)
 
     // Profile bootstrap and onboarding check
     const { data: userRes } = await supabase.auth.getUser()
@@ -49,18 +72,22 @@ export async function GET(request: NextRequest) {
       let isOnboarded = existingProfile?.is_onboarded ?? false
 
       if (!existingProfile) {
-        await supabase.from('users').insert({
+        const { error: insertError } = await supabase.from('users').insert({
           id: user.id,
           github_username: githubUsername,
           display_name: displayName,
           avatar_url: avatarUrl,
           is_onboarded: false,
         })
+        if (insertError) {
+          console.error('Profile creation failed:', insertError)
+        }
         isOnboarded = false
       }
 
       const defaultPath = isOnboarded ? '/dashboard' : '/onboard'
       const redirectPath = next || defaultPath
+      console.log('Redirecting to:', redirectPath)
       return NextResponse.redirect(`${requestUrl.origin}${redirectPath}`)
     }
 
