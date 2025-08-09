@@ -2,10 +2,10 @@
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { LoginForm } from "@/components/login-form";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [checking, setChecking] = useState(true);
@@ -109,5 +109,26 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/20">
+        <div className="flex flex-col items-center gap-4">
+          <Image 
+            src="/raccoon.png" 
+            alt="func(Kode) Raccoon" 
+            width={48} 
+            height={48} 
+            className="animate-bounce"
+          />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
