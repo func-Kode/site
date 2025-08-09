@@ -139,7 +139,6 @@ export default function OnboardPage() {
             <li>
               <span className="font-semibold">Join Sprints:</span> <br />
               <span className="text-sm">Check the <Link href="/events" className="text-brand-blue underline">Events</Link> page for upcoming sprints and join the fun!</span>
-              <span className="text-sm">Check the <Link href="/events" className="text-brand-blue underline">Events</Link> page for upcoming sprints and join the fun!</span>
             </li>
           </ol>
         </section>
@@ -149,7 +148,6 @@ export default function OnboardPage() {
             <li>Login to your account</li>
             <li>Star our <a href="https://github.com/func-Kode/site" className="text-brand-blue underline">GitHub repo</a></li>
             <li>Introduce yourself in the <a href="/discussion" className="text-brand-blue underline">community discussion</a></li>
-            <li>Join the next sprint via <Link href="/events" className="text-brand-blue underline">Events</Link></li>
             <li>Join the next sprint via <Link href="/events" className="text-brand-blue underline">Events</Link></li>
           </ul>
         </section>

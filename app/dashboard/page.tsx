@@ -4,7 +4,6 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import type { User } from "@supabase/supabase-js";
 
 interface UserProfile {
   id: string;
@@ -17,7 +16,6 @@ interface UserProfile {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,8 +29,6 @@ export default function DashboardPage() {
         router.push("/auth/login");
         return;
       }
-
-      setUser(user);
 
       // Get user profile
       const { data: profile } = await supabase
