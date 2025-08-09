@@ -1,6 +1,6 @@
 "use client";
 
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createBrowserClient } from "@supabase/ssr";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,7 +18,10 @@ export function SignUpForm() {
   const handleGithub = async () => {
     setErrorMsg(null);
     setLoading(true);
-    const supabase = createClientComponentClient();
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
     try {
       const origin = window.location.origin;
       const params = new URLSearchParams(window.location.search);

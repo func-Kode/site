@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -43,7 +43,10 @@ export default function OnboardProfileForm({
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const supabase = createClientComponentClient();
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
     const { error } = await supabase.from("users").update({
       github_username: form.github_username,
       display_name: form.display_name,
