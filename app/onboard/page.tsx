@@ -80,8 +80,7 @@ export default function OnboardPage() {
 
   useEffect(() => {
     if (!loading && !session) {
-      const next = encodeURIComponent('/onboard');
-      router.push(`/auth/login?redirect=${next}`);
+      router.push('/auth/login');
     }
   }, [loading, session, router]);
 
