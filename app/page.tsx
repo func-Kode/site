@@ -132,6 +132,12 @@ export default function HomePage() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mt-6 md:mt-8 w-full max-w-md sm:max-w-none">
             <Link 
+              href="/auth/login" 
+              className="px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-brand-blue to-primary text-white font-semibold shadow-lg hover:shadow-xl touch-target button-press transition-all duration-200 text-center"
+            >
+              Get Started
+            </Link>
+            <Link 
               href="/projects" 
               className="px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-brand-green to-brand-green/80 text-white font-semibold shadow-lg hover:shadow-xl touch-target button-press transition-all duration-200 text-center"
             >
@@ -139,15 +145,9 @@ export default function HomePage() {
             </Link>
             <Link 
               href="/blog" 
-              className="px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-brand-blue to-primary text-white font-semibold shadow-lg hover:shadow-xl touch-target button-press transition-all duration-200 text-center"
-            >
-              Read Blog
-            </Link>
-            <Link 
-              href="/about" 
               className="px-6 md:px-8 py-3 md:py-4 rounded-full border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-primary-foreground touch-target button-press transition-all duration-200 text-center"
             >
-              About Us
+              Read Blog
             </Link>
           </div>
         </section>

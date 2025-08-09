@@ -6,14 +6,17 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
   const error = requestUrl.searchParams.get('error')
-  const next = requestUrl.searchParams.get('next') || '/dashboard'
 
+  // Handle OAuth errors
   if (error) {
-    return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=${encodeURIComponent(error)}`)
+    console.error('OAuth error:', error)
+    return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=oauth_error`)
   }
 
+  // Handle missing code
   if (!code) {
-    return NextResponse.redirect(`${requestUrl.origin}/auth/login`)
+    console.error('No authorization code received')
+    return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=no_code`)
   }
 
   const cookieStore = await cookies()
@@ -31,9 +34,7 @@ export async function GET(request: NextRequest) {
               cookieStore.set(name, value, options)
             )
           } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+            // Server Component context - ignore
           }
         },
       },
@@ -41,59 +42,66 @@ export async function GET(request: NextRequest) {
   )
 
   try {
+    // Exchange code for session
     const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+    
     if (exchangeError || !data?.session) {
       console.error('Code exchange failed:', exchangeError)
       return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=exchange_failed`)
     }
 
-    console.log('Session created successfully:', data.session.user.id)
+    const user = data.session.user
 
-    // Profile bootstrap and onboarding check
-    const { data: userRes } = await supabase.auth.getUser()
-    const user = userRes?.user
+    // Create or update user profile
+    const githubUsername = user.user_metadata?.user_name 
+      || user.user_metadata?.preferred_username 
+      || null
+    const displayName = user.user_metadata?.full_name 
+      || user.user_metadata?.name 
+      || githubUsername
+      || 'Developer'
+    const avatarUrl = user.user_metadata?.avatar_url || null
 
-    if (user) {
-      const githubUsername = user.user_metadata?.user_name 
-        || user.user_metadata?.preferred_username 
-        || user.user_metadata?.github_username 
-        || null
-      const displayName = user.user_metadata?.full_name 
-        || user.user_metadata?.name 
-        || (user.email ? user.email.split('@')[0] : null)
-      const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || null
+    // Check if user profile exists
+    const { data: existingProfile } = await supabase
+      .from('users')
+      .select('id, is_onboarded')
+      .eq('id', user.id)
+      .maybeSingle()
 
-      const { data: existingProfile } = await supabase
+    if (!existingProfile) {
+      // Create new user profile
+      const { error: insertError } = await supabase
         .from('users')
-        .select('id, is_onboarded')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      let isOnboarded = existingProfile?.is_onboarded ?? false
-
-      if (!existingProfile) {
-        const { error: insertError } = await supabase.from('users').insert({
+        .insert({
           id: user.id,
           github_username: githubUsername,
           display_name: displayName,
           avatar_url: avatarUrl,
+          bio: '',
+          skills: '',
+          role_preference: '',
+          interests: '',
           is_onboarded: false,
         })
-        if (insertError) {
-          console.error('Profile creation failed:', insertError)
-        }
-        isOnboarded = false
+
+      if (insertError) {
+        console.error('Profile creation failed:', insertError)
+        // Continue anyway, user can still access the app
       }
 
-      const defaultPath = isOnboarded ? '/dashboard' : '/onboard'
-      const redirectPath = next || defaultPath
-      console.log('Redirecting to:', redirectPath)
-      return NextResponse.redirect(`${requestUrl.origin}${redirectPath}`)
+      // New user goes to onboarding
+      return NextResponse.redirect(`${requestUrl.origin}/onboard`)
     }
 
-    return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=no_user`)
+    // Existing user - check if they need onboarding
+    const needsOnboarding = !existingProfile.is_onboarded
+    const redirectPath = needsOnboarding ? '/onboard' : '/dashboard'
+
+    return NextResponse.redirect(`${requestUrl.origin}${redirectPath}`)
+
   } catch (err) {
     console.error('Auth callback exception:', err)
-    return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=exception`)
+    return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=server_error`)
   }
 }
