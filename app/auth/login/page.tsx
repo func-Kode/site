@@ -3,13 +3,38 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { LoginForm } from "@/components/login-form";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [checking, setChecking] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check for error in URL parameters
+    const errorParam = searchParams.get('error');
+    const details = searchParams.get('details');
+    
+    if (errorParam) {
+      const errorMessages: Record<string, string> = {
+        'oauth_error': 'OAuth authentication failed. Please try again.',
+        'no_code': 'No authorization code received from GitHub.',
+        'exchange_failed': 'Failed to exchange authorization code for session.',
+        'session_error': 'Session creation failed.',
+        'no_session': 'No session created after authentication.',
+        'callback_error': 'Authentication callback error.',
+        'server_error': 'Server error during authentication.'
+      };
+      
+      let errorMessage = errorMessages[errorParam] || 'Authentication failed. Please try again.';
+      if (details) {
+        errorMessage += ` Details: ${decodeURIComponent(details)}`;
+      }
+      
+      setError(errorMessage);
+    }
+
     // Check if user is already logged in
     const checkAuth = async () => {
       const supabase = createClientComponentClient();
@@ -25,7 +50,7 @@ export default function LoginPage() {
     };
 
     checkAuth();
-  }, [router]);
+  }, [router, searchParams]);
 
   if (checking) {
     return (
@@ -64,6 +89,12 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-card rounded-2xl shadow-lg p-8 border">
+          {error && (
+            <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <p className="text-sm text-destructive text-center">{error}</p>
+            </div>
+          )}
+          
           <LoginForm />
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
