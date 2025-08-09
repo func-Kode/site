@@ -89,16 +89,10 @@ export async function GET(request: NextRequest) {
         console.error('Profile creation failed:', insertError)
         // Continue anyway, user can still access the app
       }
-
-      // New user goes to onboarding
-      return NextResponse.redirect(`${requestUrl.origin}/onboard`)
     }
 
-    // Existing user - check if they need onboarding
-    const needsOnboarding = !existingProfile.is_onboarded
-    const redirectPath = needsOnboarding ? '/onboard' : '/dashboard'
-
-    return NextResponse.redirect(`${requestUrl.origin}${redirectPath}`)
+    // Always redirect to dashboard after successful login
+    return NextResponse.redirect(`${requestUrl.origin}/dashboard`)
 
   } catch (err) {
     console.error('Auth callback exception:', err)
