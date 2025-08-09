@@ -37,9 +37,15 @@ export async function GET(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, {
+                ...options,
+                httpOnly: false,
+                secure: true,
+                sameSite: 'lax',
+                path: '/'
+              })
+            })
           } catch (cookieError) {
             console.warn('Cookie setting error:', cookieError);
           }
@@ -82,9 +88,38 @@ export async function GET(request: NextRequest) {
     // Skip profile creation for now to test if that's the issue
     console.log('Skipping profile creation - redirecting directly to dashboard...');
     
-    // Always redirect to dashboard after successful login
+    // Create response with proper cookie handling
     console.log('=== AUTH CALLBACK SUCCESS - REDIRECTING ===');
-    return NextResponse.redirect(`${requestUrl.origin}/dashboard`)
+    const response = NextResponse.redirect(`${requestUrl.origin}/dashboard`)
+    
+    // Clear any existing auth cookies first
+    const allCookies = cookieStore.getAll()
+    console.log('Found cookies:', allCookies.map(c => c.name));
+    
+    // Clear old auth cookies first
+    allCookies.forEach(cookie => {
+      if (cookie.name.startsWith('sb-')) {
+        response.cookies.delete(cookie.name)
+        console.log(`🧹 Cleared old cookie: ${cookie.name}`);
+      }
+    })
+    
+    // Set fresh session cookies with explicit configuration
+    allCookies.forEach(cookie => {
+      if (cookie.name.startsWith('sb-')) {
+        response.cookies.set(cookie.name, cookie.value, {
+          httpOnly: false,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: 60 * 60 * 24 * 7, // 7 days
+          domain: process.env.NODE_ENV === 'production' ? '.funckode.com' : undefined
+        })
+        console.log(`🍪 Set fresh cookie: ${cookie.name}`);
+      }
+    })
+    
+    return response
 
   } catch (err) {
     console.error('Auth callback exception:', err);
