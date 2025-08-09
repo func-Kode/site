@@ -43,22 +43,31 @@ export default function OnboardProfileForm({
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const supabase = createClientComponentClient();
-    const { error } = await supabase.from("users").update({
-      github_username: form.github_username,
-      display_name: form.display_name,
-      bio: form.bio,
-      skills: form.skills,
-      role_preference: form.role_preference,
-      interests: form.interests,
-      is_onboarded: true,
-    }).eq("id", form.id);
-    setLoading(false);
-    if (error) {
-      setError(`Failed to update profile: ${error.message}`);
-      return;
+    
+    try {
+      const supabase = createClientComponentClient();
+      const { error } = await supabase.from("users").update({
+        github_username: form.github_username,
+        display_name: form.display_name,
+        bio: form.bio,
+        skills: form.skills,
+        role_preference: form.role_preference,
+        interests: form.interests,
+        is_onboarded: true,
+      }).eq("id", form.id);
+      
+      setLoading(false);
+      if (error) {
+        console.error('Supabase update error:', error);
+        setError(`Failed to update profile: ${error.message}`);
+        return;
+      }
+      router.push("/dashboard");
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setLoading(false);
+      setError(`Unexpected error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
-    router.push("/dashboard");
   };
 
   return (
