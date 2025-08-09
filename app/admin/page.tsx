@@ -1,25 +1,26 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { User } from "@supabase/supabase-js";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import Link from "next/link";
 import { 
   Users, 
-  UserCheck, 
   UserX, 
   Mail, 
   Phone, 
   Github, 
-  GraduationCap, 
-  Target, 
-  MapPin, 
-  MessageCircle,
-  Search,
-  Download
+  Settings,
+  CheckCircle,
+  XCircle,
+  Star,
+  Eye,
+  Calendar,
+  FileText,
+  Folder,
+  MessageSquare
 } from "lucide-react";
 
 interface RSVPResponse {
@@ -36,6 +37,26 @@ interface RSVPResponse {
   user_id: string | null;
 }
 
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  author_name: string;
+  is_approved: boolean;
+  is_featured: boolean;
+  views_count: number;
+  created_at: string;
+}
+
+interface Event {
+  id: string;
+  name: string;
+  date: string;
+  is_upcoming: boolean;
+  max_attendees: number;
+  created_at: string;
+}
+
 const ADMIN_EMAILS = ["vvs.pedapati@rediffmail.com"];
 const ADMIN_GITHUB_USERNAMES = ["basanth-pedapati"];
 
@@ -43,14 +64,44 @@ export default function AdminDashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [rsvpResponses, setRsvpResponses] = useState<RSVPResponse[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [attendanceFilter, setAttendanceFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("overview");
+
+  const supabase = createClientComponentClient();
+
+  const fetchAllData = useCallback(async () => {
+    try {
+      // Fetch RSVP responses
+      const { data: rsvpData } = await supabase
+        .from('rsvp_responses')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      // Fetch projects
+      const { data: projectData } = await supabase
+        .from('projects')
+        .select('id, title, description, author_name, is_approved, is_featured, views_count, created_at')
+        .order('created_at', { ascending: false });
+
+      // Fetch events
+      const { data: eventData } = await supabase
+        .from('events')
+        .select('id, name, date, is_upcoming, max_attendees, created_at')
+        .order('created_at', { ascending: false });
+
+      setRsvpResponses(rsvpData || []);
+      setProjects(projectData || []);
+      setEvents(eventData || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase]);
 
   useEffect(() => {
-    const supabase = createClientComponentClient();
-    
     // Check authentication and admin status
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
@@ -63,74 +114,35 @@ export default function AdminDashboard() {
       setIsAdmin(isUserAdmin);
       
       if (isUserAdmin) {
-        fetchRSVPResponses();
+        fetchAllData();
       } else {
         setLoading(false);
       }
     });
-  }, []);
+  }, [fetchAllData, supabase.auth]);
 
-  const fetchRSVPResponses = async () => {
+  const updateProjectStatus = async (projectId: string, updates: { is_approved?: boolean; is_featured?: boolean }) => {
     try {
-      const supabase = createClientComponentClient();
-      const { data, error } = await supabase
-        .from('rsvp_responses')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { error } = await supabase
+        .from('projects')
+        .update(updates)
+        .eq('id', projectId);
 
       if (error) {
-        console.error('Error fetching RSVP responses:', error);
+        console.error('Error updating project:', error);
         return;
       }
 
-      setRsvpResponses(data || []);
+      // Refresh projects
+      const { data: projectData } = await supabase
+        .from('projects')
+        .select('id, title, description, author_name, is_approved, is_featured, views_count, created_at')
+        .order('created_at', { ascending: false });
+      
+      setProjects(projectData || []);
     } catch (error) {
       console.error('Error:', error);
-    } finally {
-      setLoading(false);
     }
-  };
-
-  const filteredResponses = rsvpResponses.filter((response) => {
-    const matchesSearch = response.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         response.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         response.github_username.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = roleFilter === "all" || response.role === roleFilter;
-    const matchesAttendance = attendanceFilter === "all" || response.attendance_type === attendanceFilter;
-    
-    return matchesSearch && matchesRole && matchesAttendance;
-  });
-
-  const exportToCSV = () => {
-    const csvHeaders = [
-      "Name", "Email", "Phone", "GitHub Username", "Role", "Goals", 
-      "Attendance Type", "Comments", "Submitted At"
-    ];
-    
-    const csvData = filteredResponses.map(response => [
-      response.name,
-      response.email,
-      response.phone,
-      response.github_username,
-      response.role,
-      response.goals.join("; "),
-      response.attendance_type,
-      response.comments || "",
-      new Date(response.created_at).toLocaleString()
-    ]);
-
-    const csvContent = [csvHeaders, ...csvData]
-      .map(row => row.map(cell => `"${cell}"`).join(","))
-      .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `rsvp-responses-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
   };
 
   if (loading) {
@@ -170,13 +182,18 @@ export default function AdminDashboard() {
     );
   }
 
+  const pendingProjects = projects.filter(p => !p.is_approved);
+  const approvedProjects = projects.filter(p => p.is_approved);
+  const featuredProjects = projects.filter(p => p.is_featured);
+
   const stats = {
-    total: rsvpResponses.length,
-    virtual: rsvpResponses.filter(r => r.attendance_type === 'virtual').length,
-    onsite: rsvpResponses.filter(r => r.attendance_type === 'onsite').length,
-    students: rsvpResponses.filter(r => r.role === 'student').length,
-    professionals: rsvpResponses.filter(r => r.role === 'professional').length,
-    exploring: rsvpResponses.filter(r => r.role === 'exploring').length,
+    totalRSVPs: rsvpResponses.length,
+    totalProjects: projects.length,
+    pendingProjects: pendingProjects.length,
+    approvedProjects: approvedProjects.length,
+    featuredProjects: featuredProjects.length,
+    totalEvents: events.length,
+    upcomingEvents: events.filter(e => e.is_upcoming).length,
   };
 
   return (
@@ -185,198 +202,324 @@ export default function AdminDashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage and view RSVP responses</p>
+          <p className="text-muted-foreground">Manage projects, events, RSVPs and content</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-          <Card className="p-4">
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
-              <div>
-                <p className="text-sm text-muted-foreground">Total</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
-              </div>
-            </div>
-          </Card>
-          
-          <Card className="p-4">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-green-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Virtual</p>
-                <p className="text-2xl font-bold">{stats.virtual}</p>
-              </div>
-            </div>
-          </Card>
-          
-          <Card className="p-4">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-blue-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Onsite</p>
-                <p className="text-2xl font-bold">{stats.onsite}</p>
-              </div>
-            </div>
-          </Card>
-          
-          <Card className="p-4">
-            <div className="flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-purple-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Students</p>
-                <p className="text-2xl font-bold">{stats.students}</p>
-              </div>
-            </div>
-          </Card>
-          
-          <Card className="p-4">
-            <div className="flex items-center gap-2">
-              <UserCheck className="w-5 h-5 text-orange-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Professionals</p>
-                <p className="text-2xl font-bold">{stats.professionals}</p>
-              </div>
-            </div>
-          </Card>
-          
-          <Card className="p-4">
-            <div className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-cyan-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Exploring</p>
-                <p className="text-2xl font-bold">{stats.exploring}</p>
-              </div>
-            </div>
-          </Card>
+        {/* Navigation Tabs */}
+        <div className="flex gap-4 mb-8 border-b">
+          <button
+            onClick={() => setActiveTab("overview")}
+            className={`px-4 py-2 border-b-2 font-medium ${
+              activeTab === "overview" 
+                ? "border-primary text-primary" 
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab("projects")}
+            className={`px-4 py-2 border-b-2 font-medium ${
+              activeTab === "projects" 
+                ? "border-primary text-primary" 
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Projects ({pendingProjects.length} pending)
+          </button>
+          <button
+            onClick={() => setActiveTab("rsvps")}
+            className={`px-4 py-2 border-b-2 font-medium ${
+              activeTab === "rsvps" 
+                ? "border-primary text-primary" 
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            RSVPs
+          </button>
         </div>
 
-        {/* Filters and Search */}
-        <Card className="p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-4 flex-1">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name, email, or GitHub username..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              
-              <Select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
-                <option value="all">All Roles</option>
-                <option value="student">Students</option>
-                <option value="professional">Professionals</option>
-                <option value="exploring">Exploring</option>
-              </Select>
-              
-              <Select value={attendanceFilter} onChange={(e) => setAttendanceFilter(e.target.value)}>
-                <option value="all">All Attendance</option>
-                <option value="virtual">Virtual</option>
-                <option value="onsite">Onsite</option>
-              </Select>
-            </div>
-            
-            <Button onClick={exportToCSV} className="flex items-center gap-2">
-              <Download className="w-4 h-4" />
-              Export CSV
-            </Button>
-          </div>
-        </Card>
-
-        {/* RSVP Responses */}
-        <div className="grid gap-6">
-          {filteredResponses.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold mb-2">No RSVP responses found</h3>
-              <p className="text-muted-foreground">
-                {rsvpResponses.length === 0 
-                  ? "No one has submitted an RSVP yet." 
-                  : "Try adjusting your search or filter criteria."}
-              </p>
-            </Card>
-          ) : (
-            filteredResponses.map((response) => (
-              <Card key={response.id} className="p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Left Column */}
-                  <div className="space-y-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-xl font-semibold text-foreground">{response.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Submitted on {new Date(response.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Badge variant={response.attendance_type === 'virtual' ? 'secondary' : 'default'}>
-                          {response.attendance_type === 'virtual' ? 'Virtual' : 'Onsite'}
-                        </Badge>
-                        <Badge variant="outline">
-                          {response.role}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{response.email}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{response.phone}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <Github className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{response.github_username || 'Not provided'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Column */}
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Target className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Goals for this event:</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {response.goals.map((goal, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {goal}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    {response.comments && (
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <MessageCircle className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Additional Comments:</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
-                          {response.comments}
-                        </p>
-                      </div>
-                    )}
+        {/* Overview Tab */}
+        {activeTab === "overview" && (
+          <div className="space-y-8">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="p-4">
+                <div className="flex items-center gap-3">
+                  <Folder className="w-8 h-8 text-blue-500" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Projects</p>
+                    <p className="text-2xl font-bold">{stats.totalProjects}</p>
+                    <p className="text-xs text-muted-foreground">{stats.pendingProjects} pending approval</p>
                   </div>
                 </div>
               </Card>
-            ))
-          )}
-        </div>
 
-        {/* Show filtered count */}
-        {filteredResponses.length > 0 && filteredResponses.length !== rsvpResponses.length && (
-          <div className="text-center mt-6 text-sm text-muted-foreground">
-            Showing {filteredResponses.length} of {rsvpResponses.length} responses
+              <Card className="p-4">
+                <div className="flex items-center gap-3">
+                  <Calendar className="w-8 h-8 text-green-500" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Events</p>
+                    <p className="text-2xl font-bold">{stats.totalEvents}</p>
+                    <p className="text-xs text-muted-foreground">{stats.upcomingEvents} upcoming</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center gap-3">
+                  <Users className="w-8 h-8 text-purple-500" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">RSVPs</p>
+                    <p className="text-2xl font-bold">{stats.totalRSVPs}</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center gap-3">
+                  <Star className="w-8 h-8 text-yellow-500" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Featured</p>
+                    <p className="text-2xl font-bold">{stats.featuredProjects}</p>
+                    <p className="text-xs text-muted-foreground">projects featured</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Settings className="w-6 h-6 text-blue-500" />
+                  <h3 className="font-semibold">Project Management</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Review and approve submitted projects, feature them on the homepage.
+                </p>
+                <Link href="/admin/projects">
+                  <Button className="w-full">Manage Projects</Button>
+                </Link>
+              </Card>
+
+              <Card className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Calendar className="w-6 h-6 text-green-500" />
+                  <h3 className="font-semibold">Event Management</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Create and manage events, view attendee registrations.
+                </p>
+                <Button className="w-full" variant="outline" disabled>
+                  Coming Soon
+                </Button>
+              </Card>
+
+              <Card className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <FileText className="w-6 h-6 text-purple-500" />
+                  <h3 className="font-semibold">Content Management</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Manage blog posts, documentation, and site content.
+                </p>
+                <Button className="w-full" variant="outline" disabled>
+                  Coming Soon
+                </Button>
+              </Card>
+
+              <Card className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <MessageSquare className="w-6 h-6 text-indigo-500" />
+                  <h3 className="font-semibold">Community</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Join our Discord community for discussions and support.
+                </p>
+                <Button asChild className="w-full" variant="outline">
+                  <a href="https://discord.gg/nnkA8xJ3JU" target="_blank" rel="noopener noreferrer">
+                    Join Discord
+                  </a>
+                </Button>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Projects Tab */}
+        {activeTab === "projects" && (
+          <div className="space-y-6">
+            {projects.length === 0 ? (
+              <Card className="p-8 text-center">
+                <Folder className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-xl font-semibold mb-2">No Projects</h3>
+                <p className="text-muted-foreground">No projects have been submitted yet.</p>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {/* Pending Projects */}
+                {pendingProjects.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4 text-orange-600">
+                      Pending Approval ({pendingProjects.length})
+                    </h3>
+                    <div className="space-y-4">
+                      {pendingProjects.map((project) => (
+                        <Card key={project.id} className="p-4 border-orange-200">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h4 className="font-semibold">{project.title}</h4>
+                              <p className="text-sm text-muted-foreground mb-2">{project.description}</p>
+                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                <span>By: {project.author_name}</span>
+                                <span>{new Date(project.created_at).toLocaleDateString()}</span>
+                                <span className="flex items-center gap-1">
+                                  <Eye className="w-3 h-3" />
+                                  {project.views_count}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => updateProjectStatus(project.id, { is_approved: true })}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateProjectStatus(project.id, { is_featured: !project.is_featured })}
+                              >
+                                <Star className="w-4 h-4 mr-1" />
+                                {project.is_featured ? "Unfeature" : "Feature"}
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Approved Projects */}
+                {approvedProjects.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4 text-green-600">
+                      Approved Projects ({approvedProjects.length})
+                    </h3>
+                    <div className="space-y-4">
+                      {approvedProjects.map((project) => (
+                        <Card key={project.id} className="p-4 border-green-200">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-semibold">{project.title}</h4>
+                                {project.is_featured && (
+                                  <Badge className="bg-yellow-100 text-yellow-800">
+                                    <Star className="w-3 h-3 mr-1" />
+                                    Featured
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">{project.description}</p>
+                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                <span>By: {project.author_name}</span>
+                                <span>{new Date(project.created_at).toLocaleDateString()}</span>
+                                <span className="flex items-center gap-1">
+                                  <Eye className="w-3 h-3" />
+                                  {project.views_count}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateProjectStatus(project.id, { is_approved: false })}
+                              >
+                                <XCircle className="w-4 h-4 mr-1" />
+                                Unapprove
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={project.is_featured ? "secondary" : "outline"}
+                                onClick={() => updateProjectStatus(project.id, { is_featured: !project.is_featured })}
+                              >
+                                <Star className="w-4 h-4 mr-1" />
+                                {project.is_featured ? "Unfeature" : "Feature"}
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* RSVPs Tab */}
+        {activeTab === "rsvps" && (
+          <div className="space-y-6">
+            {rsvpResponses.length === 0 ? (
+              <Card className="p-8 text-center">
+                <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-xl font-semibold mb-2">No RSVPs</h3>
+                <p className="text-muted-foreground">No one has RSVP&apos;d yet.</p>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {rsvpResponses.slice(0, 10).map((response) => (
+                  <Card key={response.id} className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-semibold">{response.name}</h4>
+                          <Badge variant={response.attendance_type === 'virtual' ? 'secondary' : 'default'}>
+                            {response.attendance_type}
+                          </Badge>
+                          <Badge variant="outline">{response.role}</Badge>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Mail className="w-3 h-3" />
+                            {response.email}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Phone className="w-3 h-3" />
+                            {response.phone}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Github className="w-3 h-3" />
+                            {response.github_username || 'Not provided'}
+                          </span>
+                        </div>
+                        {response.goals.length > 0 && (
+                          <div className="mt-2">
+                            <div className="flex flex-wrap gap-1">
+                              {response.goals.map((goal, index) => (
+                                <Badge key={index} variant="secondary" className="text-xs">
+                                  {goal}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(response.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

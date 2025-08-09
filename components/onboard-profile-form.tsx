@@ -41,10 +41,12 @@ export default function OnboardProfileForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setLoading(true);
     setError(null);
     
     try {
+      console.log('Submitting onboarding form...');
       const supabase = createClientComponentClient();
       const { error } = await supabase.from("users").update({
         github_username: form.github_username,
@@ -62,6 +64,7 @@ export default function OnboardProfileForm({
         setError(`Failed to update profile: ${error.message}`);
         return;
       }
+      console.log('Onboarding successful, redirecting...');
       router.push("/dashboard");
     } catch (err) {
       console.error('Unexpected error:', err);
@@ -72,7 +75,11 @@ export default function OnboardProfileForm({
 
   return (
     <div className="flex justify-center items-center min-h-[60vh]">
-      <form onSubmit={handleSubmit} className="w-full max-w-lg bg-white shadow-xl rounded-2xl p-8 space-y-8 border border-gray-100 animate-fade-in">
+      <form 
+        onSubmit={handleSubmit} 
+        action="#"
+        className="w-full max-w-lg bg-white shadow-xl rounded-2xl p-8 space-y-8 border border-gray-100 animate-fade-in"
+      >
         <div className="flex flex-col items-center gap-2 mb-6">
           {form.avatar_url && (
             <Image src={form.avatar_url} alt="Avatar" width={72} height={72} className="rounded-full border-2 border-blue-500 shadow" />
@@ -119,6 +126,10 @@ export default function OnboardProfileForm({
           type="submit"
           className="w-full py-3 rounded-lg bg-blue-600 text-white font-bold text-lg shadow hover:bg-blue-700 transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-60"
           disabled={loading}
+          onClick={(e) => {
+            e.stopPropagation();
+            // Form submission handled by onSubmit
+          }}
         >
           {loading && <span className="loader border-white border-t-blue-600 mr-2"></span>}
           {loading ? "Saving..." : "Complete Onboarding"}

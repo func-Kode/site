@@ -146,6 +146,7 @@ export default function OnboardPage() {
           <ul className="list-disc ml-6 space-y-2">
             <li>Login to your account</li>
             <li>Star our <a href="https://github.com/func-Kode/site" className="text-brand-blue underline">GitHub repo</a></li>
+            <li>Join our <a href="https://discord.gg/nnkA8xJ3JU" target="_blank" rel="noopener noreferrer" className="text-brand-blue underline">Discord community</a> for help and discussions</li>
             <li>Introduce yourself in the <a href="/discussion" className="text-brand-blue underline">community discussion</a></li>
             <li>Join the next sprint via <Link href="/events" className="text-brand-blue underline">Events</Link></li>
           </ul>
@@ -163,7 +164,7 @@ export default function OnboardPage() {
             </div>
             <div>
               <h3 className="font-semibold">Contact Information</h3>
-              <p className="text-sm">Reach out via <a href="mailto:hello@funckode.com" className="text-brand-blue underline">hello@funckode.com</a> or join our <a href="/discussion" className="text-brand-blue underline">community discussion</a>.</p>
+              <p className="text-sm">Reach out via <a href="mailto:hello@funckode.com" className="text-brand-blue underline">hello@funckode.com</a> or join our <a href="https://discord.gg/nnkA8xJ3JU" target="_blank" rel="noopener noreferrer" className="text-brand-blue underline">Discord community</a>.</p>
             </div>
           </div>
         </section>

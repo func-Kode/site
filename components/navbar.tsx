@@ -8,7 +8,7 @@ import { LogoutButton } from "@/components/logout-button";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
-import { Menu, X, Code, Users, Home, User as UserIcon } from "lucide-react";
+import { Menu, X, Code, Users, Home, User as UserIcon, MessageCircle } from "lucide-react";
 
 export function Navbar() {
   const [user, setUser] = useState<User | null>(null);
@@ -59,6 +59,7 @@ export function Navbar() {
     { href: "/", label: "Home", icon: Home },
     { href: "/about", label: "About Us", icon: Users },
     { href: "/projects", label: "Projects", icon: Code },
+    { href: "https://discord.gg/nnkA8xJ3JU", label: "Discord", icon: MessageCircle, external: true },
   ];
 
   return (
@@ -77,6 +78,7 @@ export function Navbar() {
             <Link
               key={link.href}
               href={link.href}
+              {...(link.external && { target: "_blank", rel: "noopener noreferrer" })}
               className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               <link.icon className="w-4 h-4" />
@@ -170,6 +172,7 @@ export function Navbar() {
                     <Link
                       key={link.href}
                       href={link.href}
+                      {...(link.external && { target: "_blank", rel: "noopener noreferrer" })}
                       onClick={closeMobileMenu}
                       className="group flex items-center gap-4 px-4 py-3 text-base font-medium text-slate-200 hover:text-white hover:bg-gradient-to-r hover:from-blue-600/20 hover:via-purple-600/10 hover:to-transparent rounded-xl transition-all duration-200 active:scale-95 hover:shadow-lg animate-in slide-in-from-right duration-200"
                       style={{ animationDelay: `${index * 50}ms` }}
