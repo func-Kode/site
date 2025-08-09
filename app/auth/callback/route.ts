@@ -7,6 +7,10 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get('code')
   const error = requestUrl.searchParams.get('error')
 
+  console.log('Auth callback - URL:', requestUrl.href);
+  console.log('Auth callback - Code:', code ? 'present' : 'missing');
+  console.log('Auth callback - Error:', error);
+
   // Handle OAuth errors
   if (error) {
     console.error('OAuth error:', error)
@@ -43,6 +47,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Exchange code for session
+    console.log('Exchanging code for session...');
     const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
     
     if (exchangeError || !data?.session) {
@@ -50,6 +55,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=exchange_failed`)
     }
 
+    console.log('Session created successfully for user:', data.session.user.id);
     const user = data.session.user
 
     // Create or update user profile
@@ -92,6 +98,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Always redirect to dashboard after successful login
+    console.log('Redirecting to dashboard...');
     return NextResponse.redirect(`${requestUrl.origin}/dashboard`)
 
   } catch (err) {
