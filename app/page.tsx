@@ -189,6 +189,35 @@ export default function HomePage() {
           </Link>
         </section>
 
+        {/* Discord Community Section */}
+        <section className="w-full max-w-4xl mx-auto mt-12 md:mt-16">
+          <div className="bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-pink-500/10 rounded-2xl shadow-xl p-6 md:p-8 border border-indigo-200/20 dark:border-indigo-800/30">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto">
+                <span className="text-2xl md:text-3xl">💬</span>
+              </div>
+              <h3 className="text-xl md:text-2xl font-bold text-foreground">Join Our Discord Community</h3>
+              <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                Connect with fellow developers, get help with your projects, share your work, and participate in our coding challenges and events.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-6">
+                <Link
+                  href="https://discord.gg/nnkA8xJ3JU"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                >
+                  <span className="text-lg">💬</span>
+                  Join Discord
+                </Link>
+                <span className="text-sm text-muted-foreground">
+                  1000+ developers already joined
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Tip of the Day */}
         <section className="w-full max-w-2xl mx-auto mt-12 md:mt-16 flex flex-col items-center">
           <div className="bg-card rounded-2xl shadow-xl p-6 md:p-8 w-full flex flex-col items-center gap-4 animate-slide-up border border-border/50 card-hover">
