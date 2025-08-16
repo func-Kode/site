@@ -1,6 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
-import Image from "next/image";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,180 +25,57 @@ type Project = {
   id: string;
   title: string;
   description: string;
-  longDescription: string;
-  image: string;
-  githubUrl: string;
-  liveUrl?: string;
+  long_description: string;
+  github_url: string;
+  live_url?: string;
   tags: string[];
   language: string;
-  stars: number;
-  forks: number;
-  watchers: number;
-  lastUpdated: Date;
-  author: {
-    name: string;
-    avatar: string;
-    username: string;
-  };
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
   category: "Web App" | "Mobile App" | "CLI Tool" | "Library" | "Game" | "AI/ML";
-  featured: boolean;
-  contributors: number;
+  difficulty: "Beginner" | "Intermediate" | "Advanced";
+  author_name: string;
+  author_email: string;
+  user_id: string;
+  is_featured: boolean;
+  is_approved: boolean;
+  views_count?: number;
+  likes_count?: number;
+  created_at: string;
+  updated_at: string;
 };
 
-const projects: Project[] = [
-  {
-    id: "1",
-    title: "Code Snippet Manager",
-    description: "Organize and share your favorite code snippets with syntax highlighting and search.",
-    longDescription: "A comprehensive code snippet management tool built with Next.js and Supabase. Features include syntax highlighting, tagging, search functionality, and collaborative sharing.",
-    image: "/projects/snippet-manager.svg",
-    githubUrl: "https://github.com/funckode/snippet-manager",
-    liveUrl: "https://snippets.funckode.com",
-    tags: ["React", "Next.js", "Supabase", "TypeScript", "Tailwind"],
-    language: "TypeScript",
-    stars: 234,
-    forks: 45,
-    watchers: 12,
-    lastUpdated: new Date("2024-12-15"),
-    author: {
-      name: "Basanth Kumar",
-      avatar: "/avatars/basanth.svg",
-      username: "basanth"
-    },
-    difficulty: "Intermediate",
-    category: "Web App",
-    featured: true,
-    contributors: 8
-  },
-  {
-    id: "2",
-    title: "DevTools CLI",
-    description: "A powerful command-line interface for common development tasks and project scaffolding.",
-    longDescription: "Streamline your development workflow with this comprehensive CLI tool. Includes project templates, code generators, and automation scripts.",
-    image: "/projects/devtools-cli.svg",
-    githubUrl: "https://github.com/funckode/devtools-cli",
-    tags: ["Node.js", "CLI", "JavaScript", "Automation"],
-    language: "JavaScript",
-    stars: 156,
-    forks: 23,
-    watchers: 8,
-    lastUpdated: new Date("2024-12-10"),
-    author: {
-      name: "Sarah Chen",
-      avatar: "/avatars/sarahc.svg",
-      username: "sarahc"
-    },
-    difficulty: "Advanced",
-    category: "CLI Tool",
-    featured: true,
-    contributors: 5
-  },
-  {
-    id: "3",
-    title: "React Component Library",
-    description: "A modern, accessible React component library with TypeScript support.",
-    longDescription: "Build beautiful UIs faster with this comprehensive component library. Features dark mode, accessibility, and extensive customization options.",
-    image: "/projects/react-components.svg",
-    githubUrl: "https://github.com/funckode/react-components",
-    liveUrl: "https://components.funckode.com",
-    tags: ["React", "TypeScript", "Storybook", "CSS-in-JS"],
-    language: "TypeScript",
-    stars: 89,
-    forks: 15,
-    watchers: 6,
-    lastUpdated: new Date("2024-12-08"),
-    author: {
-      name: "Alex Rodriguez",
-      avatar: "/avatars/alexr.svg",
-      username: "alexr"
-    },
-    difficulty: "Intermediate",
-    category: "Library",
-    featured: false,
-    contributors: 12
-  },
-  {
-    id: "4",
-    title: "AI Code Assistant",
-    description: "An intelligent code completion and suggestion tool powered by machine learning.",
-    longDescription: "Enhance your coding experience with AI-powered suggestions, code completion, and intelligent refactoring recommendations.",
-    image: "/projects/ai-assistant.svg",
-    githubUrl: "https://github.com/funckode/ai-assistant",
-    tags: ["Python", "Machine Learning", "AI", "VSCode Extension"],
-    language: "Python",
-    stars: 312,
-    forks: 67,
-    watchers: 18,
-    lastUpdated: new Date("2024-12-12"),
-    author: {
-      name: "Dr. Emily Watson",
-      avatar: "/avatars/emilyw.svg",
-      username: "emilyw"
-    },
-    difficulty: "Advanced",
-    category: "AI/ML",
-    featured: true,
-    contributors: 15
-  },
-  {
-    id: "5",
-    title: "Mobile Task Manager",
-    description: "A cross-platform mobile app for task management with offline support.",
-    longDescription: "Stay organized with this feature-rich task management app. Includes offline sync, team collaboration, and smart notifications.",
-    image: "/projects/task-manager.svg",
-    githubUrl: "https://github.com/funckode/task-manager",
-    liveUrl: "https://tasks.funckode.com",
-    tags: ["React Native", "Expo", "SQLite", "Push Notifications"],
-    language: "JavaScript",
-    stars: 178,
-    forks: 34,
-    watchers: 9,
-    lastUpdated: new Date("2024-12-05"),
-    author: {
-      name: "Mike Johnson",
-      avatar: "/avatars/mikej.svg",
-      username: "mikej"
-    },
-    difficulty: "Intermediate",
-    category: "Mobile App",
-    featured: false,
-    contributors: 6
-  },
-  {
-    id: "6",
-    title: "Code Golf Challenge",
-    description: "A fun coding game where developers compete to write the shortest code solutions.",
-    longDescription: "Challenge yourself and others with programming puzzles. Features leaderboards, multiple languages, and daily challenges.",
-    image: "/projects/code-golf.svg",
-    githubUrl: "https://github.com/funckode/code-golf",
-    liveUrl: "https://golf.funckode.com",
-    tags: ["Vue.js", "Node.js", "Socket.io", "MongoDB"],
-    language: "JavaScript",
-    stars: 95,
-    forks: 19,
-    watchers: 4,
-    lastUpdated: new Date("2024-11-28"),
-    author: {
-      name: "Lisa Park",
-      avatar: "/avatars/lisap.svg",
-      username: "lisap"
-    },
-    difficulty: "Beginner",
-    category: "Game",
-    featured: false,
-    contributors: 3
-  }
-];
-const
-  categories = ["All", "Web App", "Mobile App", "CLI Tool", "Library", "Game", "AI/ML"];
+const categories = ["All", "Web App", "Mobile App", "CLI Tool", "Library", "Game", "AI/ML"];
 const difficulties = ["All", "Beginner", "Intermediate", "Advanced"];
 
 export default function ProjectsPage() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/projects');
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch projects');
+        }
+        
+        setProjects(data.projects || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch projects');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
 
   const filteredProjects = useMemo(() => {
     return projects.filter(project => {
@@ -209,13 +85,13 @@ export default function ProjectsPage() {
 
       const matchesCategory = selectedCategory === "All" || project.category === selectedCategory;
       const matchesDifficulty = selectedDifficulty === "All" || project.difficulty === selectedDifficulty;
-      const matchesFeatured = !showFeaturedOnly || project.featured;
+      const matchesFeatured = !showFeaturedOnly || project.is_featured;
 
       return matchesSearch && matchesCategory && matchesDifficulty && matchesFeatured;
     });
-  }, [searchTerm, selectedCategory, selectedDifficulty, showFeaturedOnly]);
+  }, [projects, searchTerm, selectedCategory, selectedDifficulty, showFeaturedOnly]);
 
-  const featuredProjects = projects.filter(project => project.featured);
+  const featuredProjects = projects.filter(project => project.is_featured);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -226,13 +102,75 @@ export default function ProjectsPage() {
     }
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (dateString: string) => {
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
-    }).format(date);
+    }).format(new Date(dateString));
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="bg-gradient-to-br from-background to-muted/20">
+        <div className="container mx-auto container-mobile py-8 md:py-12 safe-bottom">
+          <div className="text-center mb-12 md:mb-16">
+            <div className="flex items-center justify-center gap-3 mb-4 md:mb-6">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-brand-blue to-primary rounded-xl flex items-center justify-center">
+                <Rocket className="w-5 h-5 md:w-6 md:h-6 text-white" />
+              </div>
+              <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold bg-gradient-to-r from-brand-blue to-primary bg-clip-text text-transparent">
+                Projects
+              </h1>
+            </div>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Discover amazing projects built by our community. From web apps to AI tools,
+              find inspiration and contribute to open-source innovation.
+            </p>
+          </div>
+          <div className="flex justify-center items-center py-20">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading projects...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="bg-gradient-to-br from-background to-muted/20">
+        <div className="container mx-auto container-mobile py-8 md:py-12 safe-bottom">
+          <div className="text-center mb-12 md:mb-16">
+            <div className="flex items-center justify-center gap-3 mb-4 md:mb-6">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-brand-blue to-primary rounded-xl flex items-center justify-center">
+                <Rocket className="w-5 h-5 md:w-6 md:h-6 text-white" />
+              </div>
+              <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold bg-gradient-to-r from-brand-blue to-primary bg-clip-text text-transparent">
+                Projects
+              </h1>
+            </div>
+          </div>
+          <Card className="p-12 text-center border-0 shadow-lg">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+                <ExternalLink className="w-8 h-8 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground">Failed to load projects</h3>
+              <p className="text-muted-foreground max-w-md">{error}</p>
+              <Button onClick={() => window.location.reload()} variant="outline">
+                Try Again
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gradient-to-br from-background to-muted/20">
@@ -272,13 +210,9 @@ export default function ProjectsPage() {
               {featuredProjects.slice(0, 3).map((project) => (
                 <Card key={project.id} className="group card-hover border-0 shadow-lg bg-gradient-to-br from-card to-card/50">
                   <div className="relative overflow-hidden rounded-t-xl">
-                    <Image
-                      src={project.image}
-                      alt={project.title}
-                      width={400}
-                      height={250}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+                    <div className="w-full h-48 bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
+                      <Code className="w-16 h-16 text-muted-foreground" />
+                    </div>
                     <div className="absolute top-4 left-4">
                       <Badge className="bg-brand-green text-white">
                         <Star className="w-3 h-3 mr-1" />
@@ -306,15 +240,11 @@ export default function ProjectsPage() {
 
                     {/* Author */}
                     <div className="flex items-center gap-2 mb-4">
-                      <Image
-                        src={project.author.avatar}
-                        alt={project.author.name}
-                        width={24}
-                        height={24}
-                        className="w-6 h-6 rounded-full"
-                      />
+                      <div className="w-6 h-6 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center">
+                        <Users className="w-3 h-3 text-muted-foreground" />
+                      </div>
                       <span className="text-sm text-muted-foreground">
-                        by {project.author.name}
+                        by {project.author_name}
                       </span>
                     </div>
 
@@ -322,15 +252,15 @@ export default function ProjectsPage() {
                     <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4" />
-                        {project.stars}
+                        {project.likes_count || 0}
                       </div>
                       <div className="flex items-center gap-1">
                         <GitFork className="w-4 h-4" />
-                        {project.forks}
+                        0
                       </div>
                       <div className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
-                        {project.contributors}
+                        1
                       </div>
                     </div>
 
@@ -351,14 +281,14 @@ export default function ProjectsPage() {
                     {/* Actions */}
                     <div className="flex gap-2">
                       <Button asChild size="sm" className="flex-1">
-                        <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                        <Link href={project.github_url} target="_blank" rel="noopener noreferrer">
                           <Github className="w-4 h-4 mr-2" />
                           Code
                         </Link>
                       </Button>
-                      {project.liveUrl && (
+                      {project.live_url && (
                         <Button asChild variant="outline" size="sm" className="flex-1">
-                          <Link href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                          <Link href={project.live_url} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="w-4 h-4 mr-2" />
                             Live
                           </Link>
@@ -478,19 +408,15 @@ export default function ProjectsPage() {
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="relative overflow-hidden rounded-t-xl">
-                    <Image
-                      src={project.image}
-                      alt={project.title}
-                      width={400}
-                      height={250}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+                    <div className="w-full h-48 bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center group-hover:from-primary/15 group-hover:to-secondary/15 transition-colors duration-300">
+                      <Code className="w-16 h-16 text-muted-foreground" />
+                    </div>
                     <div className="absolute top-4 right-4">
                       <Badge className={getDifficultyColor(project.difficulty)}>
                         {project.difficulty}
                       </Badge>
                     </div>
-                    {project.featured && (
+                    {project.is_featured && (
                       <div className="absolute top-4 left-4">
                         <Badge className="bg-brand-green text-white">
                           <Star className="w-3 h-3 mr-1" />
@@ -517,18 +443,14 @@ export default function ProjectsPage() {
                     {/* Author & Date */}
                     <div className="flex items-center justify-between mb-4 text-xs text-muted-foreground">
                       <div className="flex items-center gap-2">
-                        <Image
-                          src={project.author.avatar}
-                          alt={project.author.name}
-                          width={20}
-                          height={20}
-                          className="w-5 h-5 rounded-full"
-                        />
-                        <span>{project.author.name}</span>
+                        <div className="w-5 h-5 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center">
+                          <Users className="w-3 h-3" />
+                        </div>
+                        <span>{project.author_name}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        <span>{formatDate(project.lastUpdated)}</span>
+                        <span>{formatDate(project.created_at)}</span>
                       </div>
                     </div>
 
@@ -536,15 +458,15 @@ export default function ProjectsPage() {
                     <div className="flex items-center gap-4 mb-4 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Star className="w-3 h-3" />
-                        {project.stars}
+                        {project.likes_count || 0}
                       </div>
                       <div className="flex items-center gap-1">
                         <GitFork className="w-3 h-3" />
-                        {project.forks}
+                        0
                       </div>
                       <div className="flex items-center gap-1">
                         <Users className="w-3 h-3" />
-                        {project.contributors}
+                        1
                       </div>
                       <div className="flex items-center gap-1">
                         <Code className="w-3 h-3" />
@@ -569,14 +491,14 @@ export default function ProjectsPage() {
                     {/* Actions */}
                     <div className="flex gap-2">
                       <Button asChild size="sm" className="flex-1 text-xs">
-                        <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                        <Link href={project.github_url} target="_blank" rel="noopener noreferrer">
                           <Github className="w-3 h-3 mr-1" />
                           Code
                         </Link>
                       </Button>
-                      {project.liveUrl && (
+                      {project.live_url && (
                         <Button asChild variant="outline" size="sm" className="flex-1 text-xs">
-                          <Link href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                          <Link href={project.live_url} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="w-3 h-3 mr-1" />
                             Live
                           </Link>
