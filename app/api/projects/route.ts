@@ -61,7 +61,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Missing required fields: ${missing.join(', ')}` }, { status: 400 });
     }
 
-    if (!String(body.githubUrl).includes('github.com')) {
+    let githubHostValid = false;
+    try {
+      const parsed = new URL(String(body.githubUrl));
+      // Accept only github.com and www.github.com
+      githubHostValid = ['github.com', 'www.github.com'].includes(parsed.host);
+    } catch {
+      githubHostValid = false;
+    }
+    if (!githubHostValid) {
       return NextResponse.json({ error: 'Please provide a valid GitHub URL' }, { status: 400 });
     }
     if (body.liveUrl && !/^https?:\/\//i.test(String(body.liveUrl))) {
